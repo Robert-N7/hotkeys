@@ -1,0 +1,107 @@
+import os
+from hotkeys import clip, send
+
+from stubs.transform_case import pascal_case, snake_case
+
+
+class Stub:
+    # Flags
+    FL_STATIC = 0x1
+    FL_STUB = 0x2   # No function body
+    FL_FINAL = 0x4
+    FL_VIRTUAL = 0x8
+    FL_OVERRIDE = 0x10
+    FL_SEALED = 0x20
+    FL_ASYNC = 0x40
+    FL_DELEGATE = 0x80
+    FL_UNSAFE = 0x100
+    FL_ABSTRACT = 0x202
+
+    FL_KEYWORDS = {
+        FL_STATIC: 'static',
+        FL_STUB: 'stub',
+        FL_FINAL: 'final',
+        FL_VIRTUAL: 'virtual',
+        FL_OVERRIDE: 'override',
+        FL_SEALED: 'sealed',
+        FL_ASYNC: 'async',
+        FL_DELEGATE: 'delegate',
+        FL_UNSAFE: 'unsafe',
+        FL_ABSTRACT: 'abstract'
+    }
+
+    ext = '.py'
+    default_privacy = None
+    has_privacy = True
+    has_return_type = True
+    has_abstract_classes = True
+    has_static_classes = True
+    possible_flags = FL_STATIC | FL_ABSTRACT
+
+    @staticmethod
+    def keyword(flag, with_space=False):
+        t = Stub.FL_KEYWORDS[flag]
+        if with_space:
+            t += ' '
+        return t
+
+    def class_case(self, text):
+        raise NotImplementedError()
+
+    def file_case(self, text):
+        raise NotImplementedError()
+
+    def function_case(self, text):
+        raise NotImplementedError()
+
+    def __init__(self, editor, project_dir=''):
+        self.project_dir = project_dir
+        self.editor = editor
+
+    def _gen_function_stub(self, name, params, retrn, indent, privacy, return_type, flags):
+        raise NotImplementedError()
+
+    def _gen_class_stub(self, name, base, interfaces, indent, privacy, flags):
+        raise NotImplementedError()
+
+    def _gen_file_stub(self, name, directory, class_info):
+        return '\n' * 2
+
+    def after_function_paste(self, name, params, retrn, indent, privacy, return_type, flags):
+        pass
+
+    def after_class_paste(self, name, base, interfaces, indent, privacy, flags):
+        pass
+
+    def after_file_create(self, name, directory, class_info):
+        self.editor.navigate_to_file(os.path.join(directory, name))
+
+    def create_function(self, name, params, retrn, indent='', privacy=None, return_type=None, flags=0):
+        name = self.function_case(name)
+        clip(self._gen_function_stub(name, params, retrn, indent, privacy or self.default_privacy, return_type, flags))
+        self.editor.paste()
+        self.after_function_paste(name, params, retrn, indent, privacy or self.default_privacy, return_type, flags)
+        return True
+
+    def create_class(self, name, base, interfaces, indent='', privacy=None, flags=0):
+        name = self.class_case(name)
+        clip(self._gen_class_stub(name, base, interfaces, indent, privacy or self.default_privacy, flags))
+        self.editor.paste()
+        self.after_class_paste(name, base, interfaces, indent, privacy or self.default_privacy, flags)
+        return True
+
+    def create_file(self, name, directory, class_info=None):
+        name = self.file_case(name)
+        if not name.endswith(self.ext):
+            name += self.ext
+        path = os.path.join(directory, name)
+        if not os.path.exists(path):
+            text = self._gen_file_stub(name, directory, class_info)
+            if class_info and class_info[0]:
+                class_info[1] = self.class_case(class_info[1])
+                text += self._gen_class_stub(*class_info)
+            with open(path, 'w') as f:
+                f.write(text)
+            self.after_file_create(name, directory, class_info)
+            return True
+        return False
