@@ -1,6 +1,6 @@
 import time
 
-from PyQt5.QtWidgets import QLabel, QLineEdit, QComboBox
+from PyQt5.QtWidgets import QLabel, QLineEdit, QComboBox, QCheckBox
 
 from stubs.stub_window import StubWindow
 
@@ -21,6 +21,8 @@ class FileWindow(StubWindow):
         self.add_right(QLineEdit(), 'base_edit')
         self.base_edit.textEdited.connect(self.on_base_change)
         self.add_right(QLineEdit(), 'interface_edit')
+        self.add_left(QLabel('---'))
+        self.add_right(QCheckBox('Constructor'), 'constructor_ck')
         if self.stub.has_privacy:
             self.add_left(QLabel('Privacy'))
             self.privacy_box = QComboBox()
@@ -40,11 +42,16 @@ class FileWindow(StubWindow):
         indent = ''
         privacy = self.privacy_box.currentText() if self.stub.has_privacy else None
         class_text = self.class_edit.text()
+        flags = 0
+        if self.constructor_ck.isChecked():
+            flags |= self.stub.FL_CONSTRUCTOR
         class_info = [class_text,
                       self.base_edit.text(),
                       interfaces,
                       indent,
-                      privacy] if class_text else None
+                      privacy,
+                      flags
+                      ] if class_text else None
 
         self.stub.create_file(self.file_edit.text(), self.dir_edit.text(), class_info)
 

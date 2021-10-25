@@ -16,6 +16,8 @@ class Stub:
     FL_DELEGATE = 0x80
     FL_UNSAFE = 0x100
     FL_ABSTRACT = 0x202
+    FL_CONSTRUCTOR = 0x400
+    FL_ISMETHOD = 0x800
 
     FL_KEYWORDS = {
         FL_STATIC: 'static',
@@ -91,13 +93,15 @@ class Stub:
 
     def create_function(self, name, params, retrn, indent='', privacy=None, return_type=None, flags=0):
         name = self.function_case(name)
-        self.__send_to_editor(self._gen_function_stub(name, params, retrn, indent, privacy or self.default_privacy, return_type, flags))
+        self.__send_to_editor(self._gen_function_stub(name, params, retrn, indent, privacy or self.default_privacy,
+                                                      return_type, flags))
         self._after_function_paste(name, params, retrn, indent, privacy or self.default_privacy, return_type, flags)
         return True
 
     def create_class(self, name, base, interfaces, indent='', privacy=None, flags=0):
         name = self.class_case(name)
-        self.__send_to_editor(self._gen_class_stub(name, base, interfaces, indent, privacy or self.default_privacy, flags))
+        self.__send_to_editor(self._gen_class_stub(name, base, interfaces, indent,
+                                                   privacy or self.default_privacy, flags))
         self._after_class_paste(name, base, interfaces, indent, privacy or self.default_privacy, flags)
         return True
 

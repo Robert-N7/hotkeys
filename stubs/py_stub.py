@@ -43,11 +43,15 @@ class PyStub(Stub):
 
     def _gen_class_stub(self, name, base, interfaces, indent, privacy, flags):
         base = '' if not base else f'({base})'
-        last = f'{indent}    pass    # todo Ponder and deliberate before you make a move. \n'
+        if flags & self.FL_CONSTRUCTOR:
+            f_indent = indent + ' ' * 4
+            last = f_indent + self._gen_function_stub('__init__', [], '', f_indent, '', '', 0)
+        else:
+            last = f'{indent}    pass    # todo Ponder and deliberate before you make a move. \n'
         return f'class {name}{base}:\n{last}'
 
     def _after_class_paste(self, name, base, interfaces, indent, privacy, flags):
-        self.editor.select_todo_line()
+        self.editor.select_todo_line(1)
 
     def _gen_print_stub(self):
         return "print(f'')"

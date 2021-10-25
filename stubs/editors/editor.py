@@ -50,7 +50,7 @@ class Editor:
 
     def select_todo_line(self, up_amount=1):
         self.up(up_amount)
-        send('{up}' * up_amount + '{home}+{end}')
+        send('{home}+{end}')
 
     def navigate_to_file(self, filename):
         raise NotImplementedError()

@@ -21,7 +21,8 @@ class JsStub(Stub):
 
     def _gen_function_stub(self, name, params, retrn, indent, privacy, return_type, flags):
         params = ', '.join(params)
-        head = f'function {name}({params}) '
+        head = '' if flags & self.FL_ISMETHOD else 'function '
+        head += f'{name}({params}) '
         last = ''
         if retrn:
             last += f'{indent}    return {retrn};\n'
@@ -32,8 +33,12 @@ class JsStub(Stub):
 
     def _gen_class_stub(self, name, base, interfaces, indent, privacy, flags):
         base = ' extends ' + base if base else ''
-        return f'{indent}class {name}{base} ' + '{\n' + \
-               indent + '    // todo Ponder and deliberate before you make a move.\n' + '}\n'
+        if flags & self.FL_CONSTRUCTOR:
+            last = indent + self._gen_function_stub('constructor', [], None, indent + ' ' * 4,
+                                                    '', '', self.FL_ISMETHOD)
+        else:
+            last = indent + '    // todo Ponder and deliberate before you make a move.\n' + '}\n'
+        return f'{indent}class {name}{base} ' + '{\n' + last
 
     def _gen_print_stub(self):
         return 'console.log();'
