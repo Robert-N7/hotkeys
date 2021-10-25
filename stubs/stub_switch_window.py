@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QLabel, QComboBox
+from PyQt5.QtWidgets import QLabel, QComboBox, QLineEdit
 
 from stubs.editors.pycharm import Pycharm
 from stubs.py_stub import PyStub
@@ -18,7 +18,12 @@ class StubSwitchWindow(StubWindow):
         self.editor_box = QComboBox()
         self.editor_box.addItems(controller.editors.keys())
         self.add_right(self.editor_box)
+        self.add_left(QLabel('Project Path'))
+        self.add_right(QLineEdit(), 'project_path')
+
 
     def submit(self):
         super().submit()
-        self.controller.set_stub(self.language_box.currentText(), self.editor_box.currentText())
+        self.controller.set_stub(self.language_box.currentText(),
+                                 self.editor_box.currentText(),
+                                 self.project_path.text())

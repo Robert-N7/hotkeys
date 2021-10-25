@@ -1,3 +1,4 @@
+from hotkeys import send
 from stubs.stub import Stub
 from stubs.transform_case import camel_case, kebab_case, pascal_case
 
@@ -23,7 +24,9 @@ class JsStub(Stub):
         head = f'function {name}({params}) '
         last = ''
         if retrn:
-            last += f'{indent}    return {retrn}\n'
+            last += f'{indent}    return {retrn};\n'
+        elif flags & self.FL_ABSTRACT:
+            last += f'{indent}    throw new Error("Not implemented");\n'
         last += f'{indent}' + '}\n'
         return head + ' {\n' + f'{indent}    // todo\n' + last
 
@@ -32,9 +35,18 @@ class JsStub(Stub):
         return f'{indent}class {name}{base} ' + '{\n' + \
                indent + '    // todo Ponder and deliberate before you make a move.\n' + '}\n'
 
-    def after_class_paste(self, name, base, interfaces, indent, privacy, flags):
+    def _gen_print_stub(self):
+        return 'console.log();'
+
+    def _gen_this_stub(self):
+        return 'this.'
+
+    def _after_class_paste(self, name, base, interfaces, indent, privacy, flags):
         return self.editor.select_todo_line(2)
 
-    def after_function_paste(self, name, params, retrn, indent, privacy, return_type, flags):
+    def _after_function_paste(self, name, params, retrn, indent, privacy, return_type, flags):
         up = 2 if not retrn else 3
         return self.editor.select_todo_line(up)
+
+    def _after_print_paste(self):
+        self.editor.left(2)

@@ -32,10 +32,12 @@ class PyStub(Stub):
         static = f'@staticmethod\n{indent}' if flags & self.FL_STATIC else ''
         return f'{static}def {name}({param_s}):\n{last}'
 
-    def after_function_paste(self, name, params, retrn, indent, privacy, return_type, flags):
+    def _after_function_paste(self, name, params, retrn, indent, privacy, return_type, flags):
+        if flags & self.FL_ABSTRACT:
+            return
         if retrn:
-            self.editor.move_up(2)
-            self.editor.move_end_of_line()
+            self.editor.up(2)
+            self.editor.end()
         else:
             self.editor.select_todo_line(1)
 
@@ -44,6 +46,14 @@ class PyStub(Stub):
         last = f'{indent}    pass    # todo Ponder and deliberate before you make a move. \n'
         return f'class {name}{base}:\n{last}'
 
-    def after_class_paste(self, name, base, interfaces, indent, privacy, flags):
+    def _after_class_paste(self, name, base, interfaces, indent, privacy, flags):
         self.editor.select_todo_line()
 
+    def _gen_print_stub(self):
+        return "print(f'')"
+
+    def _after_print_paste(self):
+        self.editor.left(2)
+
+    def _gen_this_stub(self):
+        return 'self.'

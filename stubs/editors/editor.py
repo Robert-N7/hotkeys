@@ -18,25 +18,38 @@ class Editor:
         send('^v')
         time.sleep(0.1)
 
-    def move_up(self, amount=1):
-        send('{up}' * amount)
+    def up(self, amount=1):
+        send('{up ' + str(amount) + '}')
 
-    def move_down(self, amount=1):
-        send('{down}' * amount)
+    def down(self, amount=1):
+        send('{down ' + str(amount) + '}')
 
-    def move_start_of_line(self):
+    def left(self, amount=1):
+        send('{left ' + str(amount) + '}')
+
+    def right(self, amount=1):
+        send('{right ' + str(amount) + '}')
+
+    def home(self):
         send('{home}')
 
-    def move_end_of_line(self):
+    def end(self):
         send('{end}')
 
-    def select_to_end_of_line(self):
+    def select_end(self):
         send('+{end}')
 
-    def select_to_start_of_line(self):
+    def select_home(self):
         send('+{home}')
 
+    def ctrl_left(self, amount):
+        send('^{left ' + str(amount) + '}')
+
+    def ctrl_right(self, amount):
+        send('^{right ' + str(amount) + '}')
+
     def select_todo_line(self, up_amount=1):
+        self.up(up_amount)
         send('{up}' * up_amount + '{home}+{end}')
 
     def navigate_to_file(self, filename):

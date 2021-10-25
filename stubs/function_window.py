@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLineEdit, QLabel, QHBoxLayout, QComboBox
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLineEdit, QLabel, QHBoxLayout, QComboBox, QCheckBox
 
 from stubs.stub_window import StubWindow
 
@@ -22,6 +22,24 @@ class FunctionWindow(StubWindow):
             self.privacy_select = QComboBox()
             self.privacy_select.addItems(['public', 'protected', 'private', ''])
             self.add_right(self.privacy_select)
+        if self.stub.possible_flags & self.stub.FL_ABSTRACT:
+            self.abstract = QCheckBox('Abstract')
+            self.add_left(self.abstract)
+        if self.stub.possible_flags & self.stub.FL_STATIC:
+            self.static = QCheckBox('Static')
+            self.add_right(self.static)
+
+    @staticmethod
+    def staticky(oof):
+        raise NotImplementedError()
+
+    def __get_flags(self):
+        flags = 0
+        if hasattr(self, 'static') and self.static.isChecked():
+            flags |= self.stub.FL_STATIC
+        if hasattr(self, 'abstract') and self.abstract.isChecked():
+            flags |= self.stub.FL_ABSTRACT
+        return flags
 
     def submit(self):
         super().submit()
@@ -34,7 +52,8 @@ class FunctionWindow(StubWindow):
                                   self.retrn_edit.text(),
                                   indent,
                                   privacy,
-                                  return_type
+                                  return_type,
+                                  self.__get_flags()
                                   )
 
 

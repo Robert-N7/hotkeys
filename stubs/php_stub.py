@@ -1,5 +1,6 @@
 import os
 
+from hotkeys import send
 from stubs.stub import Stub
 from stubs.transform_case import pascal_case, snake_case, camel_case
 
@@ -48,9 +49,9 @@ class PhpStub(Stub):
         base = ' extends ' + self.class_case(base) if base else ''
         interfaces = ' implements ' + ', '.join(interfaces) if interfaces else ''
         return f'{abstract}class {name}{base}{interfaces}\n' + \
-                indent + '{\n' + \
-                f'{indent}    // todo really cool things\n' + \
-                indent + '}\n'
+               indent + '{\n' + \
+               f'{indent}    // todo really cool things\n' + \
+               indent + '}\n'
 
     def __get_namespace(self, directory):
         folders = []
@@ -62,11 +63,22 @@ class PhpStub(Stub):
 
     def _gen_file_stub(self, name, directory, class_info):
         return f'<?php\n\n' + \
-                f'namespace {self.__get_namespace(directory)};\n\n\n'
+               f'namespace {self.__get_namespace(directory)};\n\n\n'
 
-    def after_function_paste(self, name, params, retrn, indent, privacy, return_type, flags):
+    def _after_function_paste(self, name, params, retrn, indent, privacy, return_type, flags):
         up = 3 if retrn else 2
         self.editor.select_todo_line(up)
 
-    def after_class_paste(self, name, base, interfaces, indent, privacy, flags):
+    def _after_class_paste(self, name, base, interfaces, indent, privacy, flags):
         self.editor.select_todo_line(2)
+
+    def _gen_print_stub(self):
+        return 'echo  . PHP_EOL;'
+
+    def _after_print_paste(self):
+        self.editor.left()
+        self.editor.ctrl_left(2)
+        self.editor.left()
+
+    def _gen_this_stub(self):
+        return 'this.'

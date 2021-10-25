@@ -67,27 +67,38 @@ class Stub:
     def _gen_file_stub(self, name, directory, class_info):
         return '\n' * 2
 
-    def after_function_paste(self, name, params, retrn, indent, privacy, return_type, flags):
+    def _gen_print_stub(self):
+        raise NotImplementedError()
+
+    def _gen_this_stub(self):
+        raise NotImplementedError()
+
+    def _after_function_paste(self, name, params, retrn, indent, privacy, return_type, flags):
         pass
 
-    def after_class_paste(self, name, base, interfaces, indent, privacy, flags):
+    def _after_class_paste(self, name, base, interfaces, indent, privacy, flags):
         pass
 
-    def after_file_create(self, name, directory, class_info):
+    def _after_print_paste(self):
+        pass
+
+    def _after_file_create(self, name, directory, class_info):
         self.editor.navigate_to_file(os.path.join(directory, name))
+
+    def __send_to_editor(self, s):
+        clip(s)
+        self.editor.paste()
 
     def create_function(self, name, params, retrn, indent='', privacy=None, return_type=None, flags=0):
         name = self.function_case(name)
-        clip(self._gen_function_stub(name, params, retrn, indent, privacy or self.default_privacy, return_type, flags))
-        self.editor.paste()
-        self.after_function_paste(name, params, retrn, indent, privacy or self.default_privacy, return_type, flags)
+        self.__send_to_editor(self._gen_function_stub(name, params, retrn, indent, privacy or self.default_privacy, return_type, flags))
+        self._after_function_paste(name, params, retrn, indent, privacy or self.default_privacy, return_type, flags)
         return True
 
     def create_class(self, name, base, interfaces, indent='', privacy=None, flags=0):
         name = self.class_case(name)
-        clip(self._gen_class_stub(name, base, interfaces, indent, privacy or self.default_privacy, flags))
-        self.editor.paste()
-        self.after_class_paste(name, base, interfaces, indent, privacy or self.default_privacy, flags)
+        self.__send_to_editor(self._gen_class_stub(name, base, interfaces, indent, privacy or self.default_privacy, flags))
+        self._after_class_paste(name, base, interfaces, indent, privacy or self.default_privacy, flags)
         return True
 
     def create_file(self, name, directory, class_info=None):
@@ -102,6 +113,15 @@ class Stub:
                 text += self._gen_class_stub(*class_info)
             with open(path, 'w') as f:
                 f.write(text)
-            self.after_file_create(name, directory, class_info)
+            self._after_file_create(name, directory, class_info)
             return True
         return False
+
+    def create_print(self):
+        self.__send_to_editor(self._gen_print_stub())
+        self._after_print_paste()
+        return True
+
+    def create_this(self):
+        self.__send_to_editor(self._gen_this_stub())
+        return True

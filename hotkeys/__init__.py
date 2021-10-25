@@ -1,5 +1,7 @@
+import os
 import platform
 import subprocess
+import sys
 import time
 
 import pyperclip
@@ -19,6 +21,7 @@ class HotkeyError(Exception):
 class InvalidKeyError(HotkeyError): pass
 
 
+class HKParserError(Exception): pass
 # endregion
 
 # region send
@@ -26,7 +29,7 @@ def clip(text):
     pyperclip.copy(text)
 
 
-def clip_wait(amount=0.5):
+def clip_wait(amount=0.2):
     timer = 0
     increment = 0.1
     s = ''
@@ -80,13 +83,41 @@ def send_input(text, interval=None):
             elif c == '{':
                 i += 1
                 j = i
+                send_times = 1
+                key = mod = None
                 while j < l and text[j] != '}':
+                    if text[j] == ' ':
+                        if key:
+                            raise HKParserError(f'Multi-Space not allowed {text[i:j]}')
+                        key = text[i:j]
+                        i = j + 1
                     j += 1
                 if j >= l:
-                    raise ValueError(f'Mismatched brackets {text}')
-                hk.append(text[i:j])
-                HK.hotkey(*hk)
-                time.sleep(interval)
+                    raise HKParserError(f'Mismatched brackets {text}')
+                if not key:
+                    key = text[i:j]
+                else:
+                    mod = text[i:j]
+                    try:
+                        send_times = int(mod)
+                        mod = None
+                    except ValueError:
+                        pass
+                hk.append(key)
+                if not mod:
+                    for k in range(send_times):
+                        HK.hotkey(*hk)
+                        time.sleep(interval)
+                else:
+                    if len(hk) > 1:
+                        raise HKParserError(f'Multi-keys not supported with {mod} modifier')
+                    mod = mod.lower()
+                    if mod == 'down':
+                        HK.keyDown(hk[0])
+                    elif mod == 'up':
+                        HK.keyUp(hk[0])
+                    else:
+                        raise HKParserError(f'Unknown modifier {mod}')
                 hk = []
                 i = j
             else:
@@ -166,7 +197,7 @@ class Hotkey():
     }
 
     @staticmethod
-    def run():
+    def wait():
         while not Hotkey.HK_QUIT:
             time.sleep(0.2)
 
@@ -179,7 +210,7 @@ class Hotkey():
             some_object_iterator = iter(bind_to)
             f = send_raw if raw else send
             if delay == -1:
-                delay = 0.3
+                delay = 0.05
             self.bind_to = lambda *args, **kwargs: f(bind_to)
         except TypeError as te:
             self.bind_to = bind_to
@@ -235,11 +266,18 @@ class Hotkey():
                 done = True
             i += 1
         self.keys = tuple(hk)
+        self.reset_keys = ''
+        if len(hk) > 1:
+            hk.reverse()
+            for i in range(1, len(hk)):
+                self.reset_keys += '{' + hk[i] + ' up}'
 
     def __call__(self, *args, **kwargs):
         # quick pause to release key
         if self.delay > 0:
             time.sleep(self.delay)
+        if self.reset_keys:
+            send(self.reset_keys)
         self.bind_to()
 
     def unregister(self):
