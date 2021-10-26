@@ -4,8 +4,9 @@ from stubs.window_stub import WindowStub
 
 
 class FunctionWindowStub(WindowStub):
-    def __init__(self, parent, stub):
+    def __init__(self, parent, stub, controller):
         super().__init__(parent, stub)
+        self.controller = controller
         self.add_left(QLabel('Function:'))
         self.add_left(QLabel('Parameters:'))
         self.add_left(QLabel('Return:'))
@@ -50,6 +51,7 @@ class FunctionWindowStub(WindowStub):
     def submit(self):
         super().submit()
         params = [x.strip() for x in self.params_edit.text().split(',') if x]
+        self.controller.set_params(params)
         indent = None     # todo possibly autodetect?
         privacy = self.privacy_select.text() if self.stub.has_privacy else None
         return_type = self.return_type_edit.text() if self.stub.has_return_type else None

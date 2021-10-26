@@ -18,6 +18,11 @@ class Editor:
         send('^v')
         time.sleep(0.1)
 
+    def copy(self):
+        clip('')
+        send('^c')
+        return clip_wait()
+
     def up(self, amount=1):
         send('{up ' + str(amount) + '}')
 

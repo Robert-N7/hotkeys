@@ -106,7 +106,7 @@ class Stub:
     def _after_file_create(self, name, directory, class_info):
         clip(os.path.join(directory, name))
 
-    def __send_to_editor(self, s):
+    def send_to_editor(self, s):
         clip(s)
         self.editor.paste()
 
@@ -114,15 +114,15 @@ class Stub:
         if indent is None:
             indent = ' ' * 4 if flags & self.FL_ISMETHOD else ''
         name = self.function_case(name)
-        self.__send_to_editor(self._gen_function_stub(name, params, retrn, indent, privacy or self.default_privacy,
-                                                      return_type, flags))
+        self.send_to_editor(self._gen_function_stub(name, params, retrn, indent, privacy or self.default_privacy,
+                                                    return_type, flags))
         self._after_function_paste(name, params, retrn, indent, privacy or self.default_privacy, return_type, flags)
         return True
 
     def create_class(self, name, base, interfaces, indent='', privacy=None, flags=0):
         name = self.class_case(name)
-        self.__send_to_editor(self._gen_class_stub(name, base, interfaces, indent,
-                                                   privacy or self.default_privacy, flags))
+        self.send_to_editor(self._gen_class_stub(name, base, interfaces, indent,
+                                                 privacy or self.default_privacy, flags))
         self._after_class_paste(name, base, interfaces, indent, privacy or self.default_privacy, flags)
         return True
 
@@ -143,21 +143,21 @@ class Stub:
         return False
 
     def create_print(self):
-        self.__send_to_editor(self._gen_print_stub())
+        self.send_to_editor(self._gen_print_stub())
         self._after_print_paste()
         return True
 
     def create_this(self):
-        self.__send_to_editor(self._gen_this_stub())
+        self.send_to_editor(self._gen_this_stub())
         return True
 
     def create_define(self, var_name):
         var_name = self.var_case(var_name)
-        self.__send_to_editor(self._gen_define_stub(var_name))
+        self.send_to_editor(self._gen_define_stub(var_name))
         self._after_define_paste(var_name)
         return True
 
     def create_for(self, iterator, items, max_i=0, indent=''):
-        self.__send_to_editor(self._gen_for_stub(iterator, items, max_i, indent))
+        self.send_to_editor(self._gen_for_stub(iterator, items, max_i, indent))
         self._after_for_paste(iterator, items, max_i, indent)
         return True
