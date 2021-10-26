@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QAct
 from hotkeys import send
 
 
-class StubWindow(QWidget):
+class WindowStub(QWidget):
     def __init__(self, parent, stub):
         super().__init__(parent)
         self.stub = stub

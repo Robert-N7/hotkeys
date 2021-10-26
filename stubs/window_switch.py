@@ -2,10 +2,10 @@ from PyQt5.QtWidgets import QLabel, QComboBox, QLineEdit
 
 from stubs.editors.pycharm import Pycharm
 from stubs.py_stub import PyStub
-from stubs.stub_window import StubWindow
+from stubs.window_stub import WindowStub
 
 
-class StubSwitchWindow(StubWindow):
+class SwitchWindowStub(WindowStub):
 
     def __init__(self, parent, stub, controller):
         super().__init__(parent, stub)

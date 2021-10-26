@@ -20,6 +20,13 @@ class PhpStub(Stub):
     def function_case(self, text):
         return camel_case(text)
 
+    def var_case(self, text):
+        return snake_case(text)
+
+    @staticmethod
+    def __var(v):
+        return v if v.startswith('$') else '$' + v
+
     def _gen_function_stub(self, name, params, retrn, indent, privacy, return_type, flags):
         for i in range(len(params)):
             if not params[i].startswith('$'):
@@ -45,12 +52,19 @@ class PhpStub(Stub):
                indent + '}\n'
 
     def _gen_class_stub(self, name, base, interfaces, indent, privacy, flags):
-        abstract = Stub.keyword(Stub.FL_ABSTRACT)
+        abstract = Stub.keyword(Stub.FL_ABSTRACT, True) if flags & self.FL_ABSTRACT else ''
         base = ' extends ' + self.class_case(base) if base else ''
         interfaces = ' implements ' + ', '.join(interfaces) if interfaces else ''
+        indent1 = self.indent(indent)
+        if flags & self.FL_CONSTRUCTOR:
+            constructor = indent1 + 'function __construct() {\n' + \
+                self.indent(indent1) + '// todo\n' + \
+                indent1 + '}\n'
+        else:
+            constructor = f'{indent}    // todo really cool things\n'
         return f'{abstract}class {name}{base}{interfaces}\n' + \
                indent + '{\n' + \
-               f'{indent}    // todo really cool things\n' + \
+               constructor + \
                indent + '}\n'
 
     def __get_namespace(self, directory):
@@ -70,7 +84,8 @@ class PhpStub(Stub):
         self.editor.select_todo_line(up)
 
     def _after_class_paste(self, name, base, interfaces, indent, privacy, flags):
-        self.editor.select_todo_line(2)
+        up = 3 if flags & self.FL_CONSTRUCTOR else 2
+        self.editor.select_todo_line(up)
 
     def _gen_print_stub(self):
         return 'echo  . PHP_EOL;'
@@ -81,4 +96,30 @@ class PhpStub(Stub):
         self.editor.left()
 
     def _gen_this_stub(self):
-        return 'this.'
+        return '$this->'
+
+    def _gen_define_stub(self, var_name):
+        var_name = self.__var(var_name)
+        return var_name + ' = ;'
+
+    def _after_define_paste(self, var_name):
+        if not var_name:
+            self.editor.left(4)
+        else:
+            self.editor.left()
+
+    def _gen_for_stub(self, iterator, items, max_i, indent):
+        iterator = self.__var(iterator)
+        if items:
+            items = self.__var(items)
+        ind = self.indent(indent)
+        end = ind + '// todo\n' + \
+              indent + '}\n'
+        if max_i:
+            return f'for ({iterator} = 0; {iterator} < {max_i}; {iterator}++) ' + '{\n' + \
+                   ind + f'$item = {items}[{iterator}];\n' + end
+
+        return f'foreach({items} as $k => {iterator}) ' + '{\n' + end
+
+    def _after_for_paste(self, iterator, items, max_i, indent):
+        self.editor.select_todo_line(2)

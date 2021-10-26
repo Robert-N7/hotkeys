@@ -47,6 +47,10 @@ class Stub:
             t += ' '
         return t
 
+    @staticmethod
+    def indent(indent):
+        return indent + ' ' * 4
+
     def class_case(self, text):
         raise NotImplementedError()
 
@@ -54,6 +58,9 @@ class Stub:
         raise NotImplementedError()
 
     def function_case(self, text):
+        raise NotImplementedError()
+
+    def var_case(self, text):
         raise NotImplementedError()
 
     def __init__(self, editor, project_dir=''):
@@ -75,6 +82,18 @@ class Stub:
     def _gen_this_stub(self):
         raise NotImplementedError()
 
+    def _gen_define_stub(self, var_name):
+        raise NotImplementedError()
+
+    def _gen_for_stub(self, iterator, items, max_i, indent):
+        raise NotImplementedError()
+
+    def _after_for_paste(self, iterator, items, max_i, indent):
+        pass
+
+    def _after_define_paste(self, var_name):
+        pass
+
     def _after_function_paste(self, name, params, retrn, indent, privacy, return_type, flags):
         pass
 
@@ -85,13 +104,15 @@ class Stub:
         pass
 
     def _after_file_create(self, name, directory, class_info):
-        self.editor.navigate_to_file(os.path.join(directory, name))
+        clip(os.path.join(directory, name))
 
     def __send_to_editor(self, s):
         clip(s)
         self.editor.paste()
 
-    def create_function(self, name, params, retrn, indent='', privacy=None, return_type=None, flags=0):
+    def create_function(self, name, params, retrn, indent=None, privacy=None, return_type=None, flags=0):
+        if indent is None:
+            indent = ' ' * 4 if flags & self.FL_ISMETHOD else ''
         name = self.function_case(name)
         self.__send_to_editor(self._gen_function_stub(name, params, retrn, indent, privacy or self.default_privacy,
                                                       return_type, flags))
@@ -128,4 +149,15 @@ class Stub:
 
     def create_this(self):
         self.__send_to_editor(self._gen_this_stub())
+        return True
+
+    def create_define(self, var_name):
+        var_name = self.var_case(var_name)
+        self.__send_to_editor(self._gen_define_stub(var_name))
+        self._after_define_paste(var_name)
+        return True
+
+    def create_for(self, iterator, items, max_i=0, indent=''):
+        self.__send_to_editor(self._gen_for_stub(iterator, items, max_i, indent))
+        self._after_for_paste(iterator, items, max_i, indent)
         return True

@@ -42,6 +42,9 @@ class Editor:
     def select_home(self):
         send('+{home}')
 
+    def space(self):
+        send('{space}')
+
     def ctrl_left(self, amount):
         send('^{left ' + str(amount) + '}')
 

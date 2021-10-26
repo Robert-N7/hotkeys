@@ -4,15 +4,17 @@ import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QTextEdit
 
 from hotkeys import Hotkey, HK_QUIT_KEY
-from stubs.class_window import ClassWindow
+from stubs.window_class import ClassWindowStub
 from stubs.editors.pycharm import Pycharm
-from stubs.file_window import FileWindow
-from stubs.function_window import FunctionWindow
+from stubs.window_define import WindowDefine
+from stubs.window_file import FileWindowStub
+from stubs.window_for import WindowFor
+from stubs.window_function import FunctionWindowStub
 from stubs.js_stub import JsStub
 from stubs.php_stub import PhpStub
 from stubs.py_stub import PyStub
 from stubs.stub import Stub
-from stubs.stub_switch_window import StubSwitchWindow
+from stubs.window_switch import SwitchWindowStub
 
 
 class StubController:
@@ -27,11 +29,7 @@ class StubController:
 
     def __init__(self, stub=None):
         self.load_config()
-        self.main_window = StubSwitchWindow(None, self.stub, self)
-        self.function_window = FunctionWindow(None, self.stub)
-        self.class_window = ClassWindow(None, self.stub)
-        self.file_window = FileWindow(None, self.stub)
-
+        self.init_windows()
         # Hotkeys
         Hotkey('^;', self.show_main_win)
         Hotkey('^m', lambda *args, **kwargs: self.function_window.show())
@@ -39,7 +37,18 @@ class StubController:
         Hotkey('^i', lambda *args, **kwargs: self.file_window.show())
         Hotkey('^p', lambda *args, **kwargs: self.stub.create_print())
         Hotkey("^'", lambda *args, **kwargs: self.stub.create_this())
+        Hotkey("!d", lambda *args, **kwargs: self.define_window.show())
+        Hotkey('!a', lambda *args, **kwargs: self.for_window.show())
         HK_QUIT_KEY.set_callback(lambda *args, **k: self.main_window.close())
+
+    def init_windows(self):
+        stub = self.stub
+        self.main_window = SwitchWindowStub(None, stub, self)
+        self.function_window = FunctionWindowStub(None, stub)
+        self.class_window = ClassWindowStub(None, stub)
+        self.file_window = FileWindowStub(None, stub)
+        self.define_window = WindowDefine(None, stub)
+        self.for_window = WindowFor(None, stub)
 
     def load_config(self):
         self.project_dir = ''
@@ -79,10 +88,7 @@ class StubController:
     def set_stub(self, language, editor, project_dir):
         editor = self.editors[editor]()
         self.stub = self.stubs[language](editor, project_dir)
-        self.function_window = FunctionWindow(None, self.stub)
-        self.class_window = ClassWindow(None, self.stub)
-        self.file_window = FileWindow(None, self.stub)
-
+        self.init_windows()
 
 def main():
     app = QApplication([])

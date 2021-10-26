@@ -1,11 +1,12 @@
+import os
 import time
 
 from PyQt5.QtWidgets import QLabel, QLineEdit, QComboBox, QCheckBox
 
-from stubs.stub_window import StubWindow
+from stubs.window_stub import WindowStub
 
 
-class FileWindow(StubWindow):
+class FileWindowStub(WindowStub):
     def __init__(self, parent, stub):
         super().__init__(parent, stub)
         self.add_left(QLabel('Filename:'))
@@ -23,6 +24,7 @@ class FileWindow(StubWindow):
         self.add_right(QLineEdit(), 'interface_edit')
         self.add_left(QLabel('---'))
         self.add_right(QCheckBox('Constructor'), 'constructor_ck')
+        self.constructor_ck.setChecked(True)
         if self.stub.has_privacy:
             self.add_left(QLabel('Privacy'))
             self.privacy_box = QComboBox()
@@ -33,7 +35,8 @@ class FileWindow(StubWindow):
         pass    #   todo find base file, generate stubs, add includes
 
     def on_file_change(self):
-        text = self.stub.class_case(self.file_edit.text())
+        file, ext = os.path.splitext(self.file_edit.text())
+        text = self.stub.class_case(file)
         self.class_edit.setText(text)
 
     def submit(self):

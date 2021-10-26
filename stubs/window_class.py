@@ -1,9 +1,9 @@
 from PyQt5.QtWidgets import QLabel, QLineEdit, QComboBox, QCheckBox
 
-from stubs.stub_window import StubWindow
+from stubs.window_stub import WindowStub
 
 
-class ClassWindow(StubWindow):
+class ClassWindowStub(WindowStub):
     def __init__(self, parent, stub):
         super().__init__(parent, stub)
         self.add_left(QLabel('Class Name:'))
@@ -15,6 +15,7 @@ class ClassWindow(StubWindow):
         self.add_right(QLineEdit(), 'interface_edit')
         self.add_left(QLabel('---'))
         self.add_right(QCheckBox('Constructor'), 'constructor_ck')
+        self.constructor_ck.setChecked(True)
         if self.stub.has_privacy:
             self.add_left(QLabel('Privacy'))
             self.privacy_box = QComboBox()

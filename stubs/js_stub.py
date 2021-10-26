@@ -19,9 +19,15 @@ class JsStub(Stub):
     def function_case(self, text):
         return camel_case(text)
 
+    def var_case(self, text):
+        return camel_case(text)
+
     def _gen_function_stub(self, name, params, retrn, indent, privacy, return_type, flags):
+        if flags & self.FL_ISMETHOD:
+            head = ''
+        else:
+            head = 'function'
         params = ', '.join(params)
-        head = '' if flags & self.FL_ISMETHOD else 'function '
         head += f'{name}({params}) '
         last = ''
         if retrn:
@@ -34,10 +40,13 @@ class JsStub(Stub):
     def _gen_class_stub(self, name, base, interfaces, indent, privacy, flags):
         base = ' extends ' + base if base else ''
         if flags & self.FL_CONSTRUCTOR:
-            last = indent + self._gen_function_stub('constructor', [], None, indent + ' ' * 4,
-                                                    '', '', self.FL_ISMETHOD)
+            new_indent = indent + ' ' * 4
+            last = new_indent + self._gen_function_stub('constructor', [], None, new_indent,
+                                                        '', '', self.FL_ISMETHOD) + \
+                   '}\n'
         else:
-            last = indent + '    // todo Ponder and deliberate before you make a move.\n' + '}\n'
+            last = indent + '    // todo\n' + \
+                   '}\n'
         return f'{indent}class {name}{base} ' + '{\n' + last
 
     def _gen_print_stub(self):
@@ -47,7 +56,11 @@ class JsStub(Stub):
         return 'this.'
 
     def _after_class_paste(self, name, base, interfaces, indent, privacy, flags):
-        return self.editor.select_todo_line(2)
+        if flags & self.FL_CONSTRUCTOR:
+            up_amount = 3
+        else:
+            up_amount = 2
+        return self.editor.select_todo_line(up_amount)
 
     def _after_function_paste(self, name, params, retrn, indent, privacy, return_type, flags):
         up = 2 if not retrn else 3
@@ -55,3 +68,27 @@ class JsStub(Stub):
 
     def _after_print_paste(self):
         self.editor.left(2)
+
+    def _gen_define_stub(self, var_name):
+        if '.' in var_name:
+            first = ''
+        else:
+            first = 'let '
+        return f'{first}{var_name} = ;'
+
+    def _after_define_paste(self, var_name):
+        left = 1 if var_name else 4
+        self.editor.left(left)
+
+    def _gen_for_stub(self, iterator, items, max_i, indent):
+        if max_i:
+            body = indent + ' ' * 4 + f'const x = {items}[{iterator}];\n' + \
+                   indent + ' ' * 4 + '// todo\n'
+            return f'for (let {iterator} = 0; {iterator} < {max_i}; {iterator}++) ' + '{\n' + \
+                   body + indent + '}\n'
+        return f'{items}.forEach(function({iterator}, key))' + ' {\n' + \
+                indent + ' ' * 4 + '// todo\n' + \
+                indent + '});\n'
+
+    def _after_for_paste(self, iterator, items, max_i, indent):
+        self.editor.select_todo_line(2)

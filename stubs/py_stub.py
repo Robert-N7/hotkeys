@@ -1,4 +1,5 @@
 from hotkeys import send
+from stubs.editors.pycharm import Pycharm
 from stubs.stub import Stub
 from stubs.transform_case import pascal_case, snake_case
 
@@ -20,8 +21,13 @@ class PyStub(Stub):
     def function_case(self, text):
         return snake_case(text)
 
+    def var_case(self, text):
+        return snake_case(text)
+
     def _gen_function_stub(self, name, params, retrn, indent, privacy, return_type, flags):
-        param_s = ', '.join(params)
+        if not flags & self.FL_STATIC and flags & self.FL_ISMETHOD:
+            params.insert(0, 'self')
+        param_s = ', '.join(params) if len(params) > 1 else params[0]
         if retrn:
             last = f'{indent}    # todo really cool stuff here\n' \
                    f'{indent}    return {retrn}\n'
@@ -45,7 +51,7 @@ class PyStub(Stub):
         base = '' if not base else f'({base})'
         if flags & self.FL_CONSTRUCTOR:
             f_indent = indent + ' ' * 4
-            last = f_indent + self._gen_function_stub('__init__', [], '', f_indent, '', '', 0)
+            last = f_indent + self._gen_function_stub('__init__', [], '', f_indent, '', '', self.FL_ISMETHOD)
         else:
             last = f'{indent}    pass    # todo Ponder and deliberate before you make a move. \n'
         return f'class {name}{base}:\n{last}'
@@ -61,3 +67,21 @@ class PyStub(Stub):
 
     def _gen_this_stub(self):
         return 'self.'
+
+    def _gen_define_stub(self, var_name):
+        return f'{var_name} = '
+
+    def _after_define_paste(self, var_name):
+        if not var_name:
+            self.editor.left(3)
+
+    def _gen_for_stub(self, iterator, items, max_i, indent):
+        if max_i:
+            return f'for {iterator} in range({max_i}):\n' + \
+                    indent + ' ' * 4 + f'x = {items}[{iterator}]\n' + \
+                    indent + ' ' * 4 + '# todo\n'
+        return f'for {iterator} in {items}:\n' + \
+                indent + ' ' * 4 + 'pass # todo\n'
+
+    def _after_for_paste(self, iterator, items, max_i, indent):
+        self.editor.select_todo_line(1)
