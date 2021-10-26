@@ -27,7 +27,7 @@ class PhpStub(Stub):
     def __var(v):
         return v if v.startswith('$') else '$' + v
 
-    def _gen_function_stub(self, name, params, retrn, indent, privacy, return_type, flags):
+    def process_params(self, params, flags):
         for i in range(len(params)):
             if not params[i].startswith('$'):
                 x = params[i].split(' ', 1)
@@ -36,6 +36,9 @@ class PhpStub(Stub):
                         params[i] = x[0] + ' $' + x[1]
                 else:
                     params[i] = '$' + params[i]
+        return params
+
+    def _gen_function_stub(self, name, params, retrn, indent, privacy, return_type, flags):
         params = ', '.join(params)
         return_type = ': ' + return_type if return_type else ''
         retrn = indent + '    return ' + retrn + '\n' if retrn else ''

@@ -51,6 +51,8 @@ class FunctionWindowStub(WindowStub):
     def submit(self):
         super().submit()
         params = [x.strip() for x in self.params_edit.text().split(',') if x]
+        flags = self.__get_flags()
+        params = self.stub.process_params(params, flags)
         self.controller.set_params(params)
         indent = None     # todo possibly autodetect?
         privacy = self.privacy_select.text() if self.stub.has_privacy else None
@@ -61,7 +63,7 @@ class FunctionWindowStub(WindowStub):
                                   indent,
                                   privacy,
                                   return_type,
-                                  self.__get_flags()
+                                  flags
                                   )
 
 

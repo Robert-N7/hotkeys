@@ -63,6 +63,9 @@ class Stub:
     def var_case(self, text):
         raise NotImplementedError()
 
+    def process_params(self, params, flags):
+        return params
+
     def __init__(self, editor, project_dir=''):
         self.project_dir = project_dir
         self.editor = editor

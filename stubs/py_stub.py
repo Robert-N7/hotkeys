@@ -24,10 +24,13 @@ class PyStub(Stub):
     def var_case(self, text):
         return snake_case(text)
 
-    def _gen_function_stub(self, name, params, retrn, indent, privacy, return_type, flags):
+    def process_params(self, params, flags):
         if not flags & self.FL_STATIC and flags & self.FL_ISMETHOD:
             params.insert(0, 'self')
-        param_s = ', '.join(params) if len(params) > 1 else params[0]
+        return params
+
+    def _gen_function_stub(self, name, params, retrn, indent, privacy, return_type, flags):
+        param_s = ', '.join(params)
         if retrn:
             last = f'{indent}    # todo really cool stuff here\n' \
                    f'{indent}    return {retrn}\n'

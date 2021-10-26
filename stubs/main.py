@@ -70,7 +70,9 @@ class StubController:
         ma = min(6, len(params))
         keys = [Qt.Key_1, Qt.Key_2, Qt.Key_3, Qt.Key_4, Qt.Key_5, Qt.Key_6]
         for i in range(ma):
-            self.save(keys[i], params[i], False)
+            # remove typing
+            x = params.split(' ')
+            self.save(keys[i], x[len(x) - 1], False)
 
     def load_config(self):
         self.project_dir = ''
