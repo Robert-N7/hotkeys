@@ -16,7 +16,6 @@ class Editor:
 
     def paste(self):
         send('^v')
-        time.sleep(0.1)
 
     def copy(self):
         clip('')

@@ -18,11 +18,5 @@ class WindowFor(WindowStub):
 
     def submit(self):
         super().submit()
-        max = 0
-        try:
-            t = self.max_i.text()
-            if t:
-                max = int(t)
-        except ValueError:
-            print('Invalid i ' + t)
+        max = self.max_i.text()
         self.stub.create_for(self.it.text(), self.items.text(), max)

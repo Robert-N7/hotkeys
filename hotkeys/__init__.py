@@ -8,7 +8,7 @@ import pyperclip
 from system_hotkey import SystemHotkey
 import pyautogui as HK
 
-SEND_INTERVAL = 0.05
+SEND_INTERVAL = 0.005
 HK_CLIPBOARD = None
 
 
@@ -31,7 +31,7 @@ def clip(text):
 
 def clip_wait(amount=0.2):
     timer = 0
-    increment = 0.1
+    increment = 0.01
     s = ''
     while timer < amount:
         s = pyperclip.paste()
@@ -273,11 +273,13 @@ class Hotkey():
                 self.reset_keys += '{' + hk[i] + ' up}'
 
     def __call__(self, *args, **kwargs):
+        start = time.time()
+        kwargs['hotkey'] = self
         # quick pause to release key
         if self.delay > 0:
             time.sleep(self.delay)
         if self.reset_keys:
-            send(self.reset_keys)
+            send(self.reset_keys, 0.01)
         self.bind_to()
 
     def unregister(self):

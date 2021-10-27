@@ -1,5 +1,7 @@
 import os
 import sys
+import time
+import timeit
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QTextEdit
@@ -46,6 +48,11 @@ class StubController:
         Hotkey('!l', self.show_load_window)
         HK_QUIT_KEY.set_callback(lambda *args, **k: self.main_window.close())
 
+        # Number stored hotkeys
+        for i in range(10):
+            Hotkey(f'^{i}', lambda *args, **k: self.load(k['hotkey'].keys[-1]))
+            Hotkey(f'^!{i}', lambda *args, **k: self.store(k['hotkey'].keys[-1]))
+
     def init_windows(self):
         stub = self.stub
         self.main_window = SwitchWindowStub(None, stub, self)
@@ -72,7 +79,7 @@ class StubController:
         for i in range(ma):
             # remove typing
             x = params.split(' ')
-            self.save(keys[i], x[len(x) - 1], False)
+            self.save(keys[i], x[len(x) - 1])
 
     def load_config(self):
         self.project_dir = ''
@@ -83,10 +90,12 @@ class StubController:
         if fp:
             fp()
 
-    def save(self, key, text, save_last=True):
+    def store(self, key):
+        text = self.stub.editor.copy()
+        self.save(key, text)
+
+    def save(self, key, text):
         self.temp_keys[key] = lambda: self.stub.send_to_editor(text)
-        if save_last:
-            self.temp_keys[Qt.Key_L] = lambda: self.stub.send_to_editor(text)
 
     @staticmethod
     def _guess_project_path(path):

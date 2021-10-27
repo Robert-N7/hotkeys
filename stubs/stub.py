@@ -1,4 +1,6 @@
 import os
+import time
+
 from hotkeys import clip, send
 
 from stubs.transform_case import pascal_case, snake_case
@@ -110,8 +112,10 @@ class Stub:
         clip(os.path.join(directory, name))
 
     def send_to_editor(self, s):
+        start = time.time()
         clip(s)
         self.editor.paste()
+        print(f'Paste took {time.time() - start}')
 
     def create_function(self, name, params, retrn, indent=None, privacy=None, return_type=None, flags=0):
         if indent is None:
