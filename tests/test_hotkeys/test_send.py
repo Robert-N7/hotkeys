@@ -35,6 +35,13 @@ class SpecialHotkey(Hotkey):
 
 
 def hotkey_tester(*args, **kwargs):
+     start = time.time()
      send('^v{up 2}')
+     print(f'Send inside hotkey took {time.time() - start} secs.')
 
-SpecialHotkey('^1', hotkey_tester)
+SpecialHotkey('^l', hotkey_tester)
+# => 0.4367
+
+Hotkey.wait()
+
+# todo rewrite pyautogui to compile text to the keycodes to send faster
