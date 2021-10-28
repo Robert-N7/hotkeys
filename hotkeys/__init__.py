@@ -8,8 +8,17 @@ import pyperclip
 from system_hotkey import SystemHotkey
 import pyautogui as HK
 
-SEND_INTERVAL = 0.005
+SEND_INTERVAL = 0.00
 HK_CLIPBOARD = None
+
+if sys.platform == "darwin":
+    from . import _pyautogui_osx as platformModule
+elif sys.platform == "win32":
+    from . import _pyautogui_win as platformModule
+elif platform.system() == "Linux":
+    from ._linux_sender import LinuxSender as Sender
+else:
+    raise NotImplementedError("Your platform (%s) is not supported by PyAutoGUI." % (platform.system()))
 
 
 # region Exceptions
@@ -145,8 +154,10 @@ def send_input(text, interval=None):
         send_raw(n_str, interval)
 
 
-send = send_input
-
+def send(text, interval=None):
+    sender = Sender(text)
+    sender.send()
+    return sender
 
 # endregion
 

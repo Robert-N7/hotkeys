@@ -1,8 +1,7 @@
 import time
-
-import pyautogui
-
+from hotkeys import send
+time.sleep(1)
 start = time.time()
-pyautogui.hotkey(['control', 'v'])
-print(f'pyautogui took {time.time() - start} secs.')
 
+text = send('This is a really cool BIt of % text that I am sending to somewhere{enter}')
+text.send()
