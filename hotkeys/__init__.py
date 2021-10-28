@@ -156,7 +156,7 @@ def send_input(text, interval=None):
 
 def send(text, interval=None):
     sender = Sender(text)
-    sender.send()
+    sender.send(interval or SEND_INTERVAL)
     return sender
 
 # endregion

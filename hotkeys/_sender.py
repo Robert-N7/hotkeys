@@ -101,6 +101,7 @@ class SendBase:
                 special_switch = False
             prev_special = special_switch
             i += 1
+        self._compile_end()
         self.sent[text] = self.key_codes
 
     def _compile_hotkey(self, hotkey):
@@ -113,6 +114,9 @@ class SendBase:
         raise NotImplementedError()
 
     def _compile_keydown(self, key):
+        raise NotImplementedError()
+
+    def _compile_end(self):
         raise NotImplementedError()
 
     def send(self, send_delay):

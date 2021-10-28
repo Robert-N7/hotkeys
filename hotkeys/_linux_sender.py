@@ -138,6 +138,7 @@ keyboardMapping.update({
     '}': _display.keysym_to_keycode(Xlib.XK.string_to_keysym('braceright')),
     '~': _display.keysym_to_keycode(Xlib.XK.string_to_keysym('asciitilde')),
 })
+keyboardMapping['control'] = keyboardMapping['ctrl']
 SHIFT = keyboardMapping['shift']
 # Trading memory for time" populate winKB so we don't have to call VkKeyScanA each time.
 for c in """abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890""":
@@ -148,54 +149,39 @@ class LinuxSender(_sender.SendBase):
     send_delay = 0.00
 
     def _compile_hotkey(self, hotkey):
-        key_codes = self.key_codes
-        max = len(hotkey) - 1
-        shift = False
-        for i in range(max):
-            code = keyboardMapping[hotkey[i]]
-            key_codes.append((code, X.KeyPress, False))
-            if code == SHIFT:
-                shift = True
-        key = hotkey[max]
-        x = keyboardMapping[key]
-        is_shift = not shift and self.is_shift_character(key)
-        if is_shift:
-            key_codes.append((SHIFT, X.KeyPress, False))
-        key_codes.append((x, X.KeyPress, True))
-        if is_shift:
-            key_codes.append((SHIFT, X.KeyPress, False))
-        key_codes.append((x, X.KeyRelease, True))
-        last = len(key_codes) - 3
-        for i in range(last, last - max, -1):
-            key_codes.append((key_codes[i][0], X.KeyRelease, False))
+        for x in hotkey:
+            self._compile_keydown(x)
+        for x in reversed(hotkey):
+            self._compile_keyup(x)
 
-    def _compile_keydown(self, key):
+    def _compile_keydown(self, key, sleep=True):
         is_shift = self.is_shift_character(key)
         key_codes = self.key_codes
         x = keyboardMapping[key]
         if is_shift:
-            self.key_codes.append((SHIFT, X.KeyPress, False))
-        key_codes.append((x, X.KeyPress, True))
+            key_codes.append((SHIFT, True, False, False))
+        key_codes.append((x, True, False, False))
         if is_shift:
-            key_codes.append((SHIFT, X.KeyPress, False))
+            key_codes.append((SHIFT, False, False, True))
 
-    def _compile_keyup(self, key):
-        self.key_codes.append((keyboardMapping[key], X.KeyRelease, True))
+    def _compile_keyup(self, key, sleep=True):
+        self.key_codes.append((keyboardMapping[key], False, sleep, True))
 
     def _compile_press(self, x):
-        key_codes = self.key_codes
-        is_shift = self.is_shift_character(x)
-        code = keyboardMapping[x]
-        if is_shift:
-            key_codes.append((SHIFT, X.KeyPress, False))
-        key_codes.append((code, X.KeyPress, True))
-        key_codes.append((code, X.KeyRelease, True))
-        if is_shift:
-            key_codes.append((SHIFT, X.KeyRelease, False))
+        self._compile_keydown(x, False)
+        self._compile_keyup(x)
+
+    def _compile_end(self):
+        pass
 
     def send(self, send_delay=0.00):
-        for key, press, delay in self.key_codes:
-            fake_input(_display, press, key)
+        sync = True
+        for key, press, delay, sync in self.key_codes:
+            down = X.KeyPress if press else X.KeyRelease
+            fake_input(_display, down, key)
+            if sync:
+                _display.sync()
             if delay:
                 time.sleep(send_delay)
-        _display.sync()
+        if not sync:
+            _display.sync()

@@ -1,14 +1,19 @@
 import time
 
+from pynput import keyboard
+
 from hotkeys import send, clip, Hotkey
 
+time.sleep(1)
 text = """This is a really long rambling sentence that may not end for a while
 because we want to try testing if the send function is able to handle
-very long text string without messing up along the long and dreary way,
-but we still want it to send as quickly as it possibly can because things
-that take too long are very annoying
+very long text string without messing up along This long and dreary way,
+but we still want it to send AS quickly AS it possibly can because things
+that take too long are Very Annoying`!`!`!
 """
 start = time.time()
+# send(text, 0.01)
+send(text)
 send(text)
 
 # => 2.3477
@@ -21,10 +26,10 @@ clip(text)
 print(f'Clip took {time.time() - start} secs.')
 
 start = time.time()
-send('^v{up 2}')
+# send('^v{up 2}')
 
 # => 0.3221
-print(f'Send hotkey took {time.time() - start} secs.')
+print(f'Send paste took {time.time() - start} secs.')
 
 # test sending with hotkey
 class SpecialHotkey(Hotkey):
@@ -39,9 +44,7 @@ def hotkey_tester(*args, **kwargs):
      send('^v{up 2}')
      print(f'Send inside hotkey took {time.time() - start} secs.')
 
-SpecialHotkey('^l', hotkey_tester)
+# SpecialHotkey('^l', hotkey_tester)
 # => 0.4367
 
-Hotkey.wait()
-
-# todo rewrite pyautogui to compile text to the keycodes to send faster
+# Hotkey.wait()
