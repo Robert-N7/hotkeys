@@ -12,7 +12,7 @@ class SendBase:
             self.compile(text)
 
     def __call__(self, *args, **kwargs):
-        self.send(kwargs.get('send_delay'))
+        self.send(kwargs.get('send_delay') or 0)
 
     @staticmethod
     def is_shift_character(key):

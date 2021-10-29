@@ -175,6 +175,13 @@ class LinuxSender(_sender.SendBase):
         pass
 
     def send(self, send_delay=0.00):
+        # Ensure focused
+        focus = _display.get_input_focus()
+        win = focus.focus
+        win.circulate(X.RaiseLowest)
+        win.set_input_focus(focus.revert_to, 0)
+        time.sleep(0.1)
+        _display.sync()
         sync = True
         for key, press, delay, sync in self.key_codes:
             down = X.KeyPress if press else X.KeyRelease

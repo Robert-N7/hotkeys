@@ -118,7 +118,7 @@ class Hotkey():
     def quit(*args, **kwargs):
         Hotkey.HK_QUIT = True
 
-    def __init__(self, keys, bind_to, raw=False, delay=-1.0):
+    def __init__(self, keys, bind_to, raw=True, delay=-1.0):
         try:
             some_object_iterator = iter(bind_to)
             if raw and ALLOW_PASTE and len(bind_to) > 12:
@@ -128,7 +128,7 @@ class Hotkey():
         except TypeError as te:
             self.bind_to = bind_to
         if delay < 0.0:
-            delay = 0.09
+            delay = 0.03
         self.set_keys(keys)
         self.delay = delay
         try:
@@ -181,20 +181,22 @@ class Hotkey():
                 done = True
             i += 1
         self.keys = tuple(hk)
-        self.reset_keys = ''
-        if len(hk) > 1:
+        if 1:
             hk.reverse()
-            for i in range(1, len(hk)):
-                self.reset_keys += '{' + hk[i] + ' up}'
-            self.reset_keys = Sender(self.reset_keys)
+            r = ''
+            for i in range(0, len(hk)):
+                r += '{' + hk[i] + ' up}'
+            self.reset_keys = Sender(r)
+        else:
+            self.reset_keys = None
 
     def __call__(self, *args, **kwargs):
         kwargs['hotkey'] = self
         # quick pause to release key
         if self.delay > 0:
             time.sleep(self.delay)
-        # if self.reset_keys:
-        #     self.reset_keys.send()
+        if self.reset_keys:
+            self.reset_keys.send()
         self.bind_to()
 
     def unregister(self):
