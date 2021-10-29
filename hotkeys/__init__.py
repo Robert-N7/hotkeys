@@ -1,24 +1,22 @@
-import os
 import platform
-import subprocess
-import sys
 import time
 
 import pyperclip
 from system_hotkey import SystemHotkey
-import pyautogui as HK
 
 SEND_INTERVAL = 0.00
+ALLOW_PASTE = True
 HK_CLIPBOARD = None
 
-if sys.platform == "darwin":
-    from . import _pyautogui_osx as platformModule
-elif sys.platform == "win32":
-    from . import _pyautogui_win as platformModule
-elif platform.system() == "Linux":
+# if sys.platform == "darwin":
+#     from . import _pyautogui_osx as platformModule
+# elif sys.platform == "win32":
+#     from . import _pyautogui_win as platformModule
+#
+if platform.system() == "Linux":
     from ._linux_sender import LinuxSender as Sender
 else:
-    raise NotImplementedError("Your platform (%s) is not supported by PyAutoGUI." % (platform.system()))
+    raise NotImplementedError("Your platform (%s) is not supported by Hotkeys." % (platform.system()))
 
 
 # region Exceptions
@@ -51,111 +49,15 @@ def clip_wait(amount=0.2):
     return s
 
 
-def send_raw(text, interval=None):
-    return HK.write(text, interval or SEND_INTERVAL)
+def send_paste(text, interval=None):
+    pyperclip.copy(text)
+    sender = Sender('^v')
+    sender.send(interval or SEND_INTERVAL)
+    return sender
 
 
-def send_input(text, interval=None):
-    """
-    Sends the text with certain special rules.
-    ^ = ctrl
-    ! = alt
-    + = shift
-    # = windows key
-    :param text: array or string
-    :param interval: float, seconds to delay
-    :return: None
-    """
-    interval = interval or SEND_INTERVAL
-    if type(text) is not str:
-        text = ''.join(text)
-    n_str = ''
-    prev_special = literal = False
-    hk = []
-    i = 0
-    l = len(text)
-    while i < l:
-        c = text[i]
-        special_switch = True
-        send_literal = False
-        if not literal:
-            if c == '!':
-                hk.append('alt')
-            elif c == '^':
-                hk.append('ctrl')
-            elif c == '#':
-                hk.append('win')
-            elif c == '+':
-                hk.append('shift')
-            elif c == '`':
-                literal = True
-            elif c == '{':
-                i += 1
-                j = i
-                send_times = 1
-                key = mod = None
-                while j < l and text[j] != '}':
-                    if text[j] == ' ':
-                        if key:
-                            raise HKParserError(f'Multi-Space not allowed {text[i:j]}')
-                        key = text[i:j]
-                        i = j + 1
-                    j += 1
-                if j >= l:
-                    raise HKParserError(f'Mismatched brackets {text}')
-                if not key:
-                    key = text[i:j]
-                else:
-                    mod = text[i:j]
-                    try:
-                        send_times = int(mod)
-                        mod = None
-                    except ValueError:
-                        pass
-                hk.append(key)
-                if not mod:
-                    for k in range(send_times):
-                        HK.hotkey(*hk)
-                        time.sleep(interval)
-                else:
-                    if len(hk) > 1:
-                        raise HKParserError(f'Multi-keys not supported with {mod} modifier')
-                    mod = mod.lower()
-                    if mod == 'down':
-                        HK.keyDown(hk[0])
-                    elif mod == 'up':
-                        HK.keyUp(hk[0])
-                    else:
-                        raise HKParserError(f'Unknown modifier {mod}')
-                hk = []
-                i = j
-            else:
-                send_literal = True
-        else:
-            send_literal = True
-            literal = False
-        if send_literal:
-            if (prev_special):
-                # reset str built
-                if n_str:
-                    send_raw(n_str, interval)
-                    time.sleep(interval)
-                    n_str = ''
-                hk.append(c)
-                HK.hotkey(*hk)
-                time.sleep(interval)
-                hk = []
-            else:
-                n_str += c
-            special_switch = False
-        prev_special = special_switch
-        i += 1
-    if n_str:
-        send_raw(n_str, interval)
-
-
-def send(text, interval=None):
-    sender = Sender(text)
+def send(text, interval=None, raw=False):
+    sender = Sender(text, raw)
     sender.send(interval or SEND_INTERVAL)
     return sender
 
@@ -219,12 +121,14 @@ class Hotkey():
     def __init__(self, keys, bind_to, raw=False, delay=-1.0):
         try:
             some_object_iterator = iter(bind_to)
-            f = send_raw if raw else send
-            if delay == -1:
-                delay = 0.05
-            self.bind_to = lambda *args, **kwargs: f(bind_to)
+            if raw and ALLOW_PASTE and len(bind_to) > 12:
+                self.bind_to = lambda *args, **kwargs: send_paste(bind_to)
+            else:
+                self.bind_to = Sender(bind_to, raw)
         except TypeError as te:
             self.bind_to = bind_to
+        if delay < 0.0:
+            delay = 0.09
         self.set_keys(keys)
         self.delay = delay
         try:
@@ -282,15 +186,15 @@ class Hotkey():
             hk.reverse()
             for i in range(1, len(hk)):
                 self.reset_keys += '{' + hk[i] + ' up}'
+            self.reset_keys = Sender(self.reset_keys)
 
     def __call__(self, *args, **kwargs):
-        start = time.time()
         kwargs['hotkey'] = self
         # quick pause to release key
         if self.delay > 0:
             time.sleep(self.delay)
-        if self.reset_keys:
-            send(self.reset_keys, 0.01)
+        # if self.reset_keys:
+        #     self.reset_keys.send()
         self.bind_to()
 
     def unregister(self):

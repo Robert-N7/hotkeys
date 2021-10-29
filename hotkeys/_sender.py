@@ -1,19 +1,26 @@
 
 class SendBase:
-    sent = {}
     shift_chars = set('~!@#$%^&*()_+{}|:"<>?')
 
     class HKParserError(Exception): pass
 
-    def __init__(self, text):
-        self.key_codes = self.sent.get(text)
-        if not self.key_codes:
-            self.key_codes = []
+    def __init__(self, text, raw=False):
+        self.key_codes = []
+        if raw:
+            self.compile_raw(text)
+        else:
             self.compile(text)
+
+    def __call__(self, *args, **kwargs):
+        self.send(kwargs.get('send_delay'))
 
     @staticmethod
     def is_shift_character(key):
         return key.isupper() or key in SendBase.shift_chars
+
+    def compile_raw(self, text):
+        for x in text:
+            self._compile_press(x)
 
     def compile(self, text):
         """
@@ -102,7 +109,6 @@ class SendBase:
             prev_special = special_switch
             i += 1
         self._compile_end()
-        self.sent[text] = self.key_codes
 
     def _compile_hotkey(self, hotkey):
         raise NotImplementedError()
