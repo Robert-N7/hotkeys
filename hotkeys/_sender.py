@@ -324,4 +324,8 @@ KEY_NAMES = [
     "option",
     "optionleft",
     "optionright",
+    "semicolon",
+    "colon",
+    "apostrophe",
+    "period",
 ]

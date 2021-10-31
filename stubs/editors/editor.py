@@ -56,8 +56,9 @@ class Editor:
         send('^{right ' + str(amount) + '}')
 
     def select_todo_line(self, up_amount=1):
-        self.up(up_amount)
-        send('{home}+{end}')
+        if up_amount:
+            self.up(up_amount)
+        send('{end}+{home}')
 
     def navigate_to_file(self, filename):
         raise NotImplementedError()

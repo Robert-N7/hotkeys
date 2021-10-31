@@ -98,7 +98,6 @@ keyboardMapping.update({
     'ctrlright': _display.keysym_to_keycode(Xlib.XK.string_to_keysym('Control_R')),
     'altleft': _display.keysym_to_keycode(Xlib.XK.string_to_keysym('Alt_L')),
     'altright': _display.keysym_to_keycode(Xlib.XK.string_to_keysym('Alt_R')),
-    'mode_switch': _display.keysym_to_keycode(Xlib.XK.string_to_keysym('Mode_Switch')),
     # These are added because unlike a-zA-Z0-9, the single characters do not have a
     ' ': _display.keysym_to_keycode(Xlib.XK.string_to_keysym('space')),
     'space': _display.keysym_to_keycode(Xlib.XK.string_to_keysym('space')),
@@ -142,10 +141,6 @@ keyboardMapping.update({
 })
 keyboardMapping['control'] = keyboardMapping['ctrl']
 
-# Trading memory for time" populate winKB so we don't have to call VkKeyScanA each time.
-for c in """abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890""":
-    keyboardMapping[c] = _display.keysym_to_keycode(Xlib.XK.string_to_keysym(c))
-
 
 class LinuxSender(_sender.SendBase):
 
@@ -172,6 +167,9 @@ class LinuxSender(_sender.SendBase):
             mask |= X.ShiftMask
         key_codes = self.key_codes
         x = keyboardMapping[key]
+        if not x:
+            keyboardMapping[key] = x = \
+                _display.keysym_to_keycode(Xlib.XK.string_to_keysym(key))
         key_codes.append((x,
                           True,
                           sleep or len(key_codes) < 3,
@@ -181,7 +179,11 @@ class LinuxSender(_sender.SendBase):
         is_shift = self.is_shift_character(key)
         if is_shift:
             mask |= X.ShiftMask
-        self.key_codes.append((keyboardMapping[key],
+        x = keyboardMapping[key]
+        if not x:
+            keyboardMapping[key] = x = \
+                _display.keysym_to_keycode(Xlib.XK.string_to_keysym(key))
+        self.key_codes.append((x,
                                False,
                                sleep or len(self.key_codes) < 3,
                                mask))

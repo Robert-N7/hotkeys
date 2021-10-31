@@ -1,6 +1,6 @@
 import os
 
-from hotkeys import send
+from hotkeys import send, Hotkey
 from stubs.stub import Stub
 from stubs.transform_case import pascal_case, snake_case, camel_case
 
@@ -10,6 +10,14 @@ class PhpStub(Stub):
     has_privacy = True
     has_return_type = True
     has_static_classes = False
+
+    def _init_hotkeys(self, hotkeys):
+        hotkeys.append(Hotkey('.', '->'))
+        hotkeys.append(Hotkey('^.', '.'))
+        hotkeys.append(Hotkey('!.', '=>'))
+        hotkeys.append(Hotkey('j', '$'))
+        hotkeys.append(Hotkey('!j', 'j'))
+
 
     def class_case(self, text):
         return pascal_case(text)
@@ -126,3 +134,24 @@ class PhpStub(Stub):
 
     def _after_for_paste(self, iterator, items, max_i, indent):
         self.editor.select_todo_line(2)
+
+    def _gen_if_stub(self, if_text, elif_text, else_text, indent=''):
+        ind = self.indent(indent)
+        s = f'{indent}if({if_text}) ' + '{\n' + \
+            f'{ind}\n'
+        if elif_text:
+            s += indent + '}' + f'else if ({elif_text})' + ' {\n' + \
+                f'{ind}\n'
+        if else_text:
+            s += indent + '} else {\n' + \
+                f'{ind}\n'
+        s += indent + '}\n'
+        return s
+
+    def _after_if_paste(self, if_text, elif_text, else_text, indent=''):
+        count = 2
+        if elif_text:
+            count += 2
+        if else_text:
+            count += 2
+        self.editor.select_todo_line(count)

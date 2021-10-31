@@ -87,8 +87,29 @@ class JsStub(Stub):
             return f'for (let {iterator} = 0; {iterator} < {max_i}; {iterator}++) ' + '{\n' + \
                    body + indent + '}\n'
         return f'{items}.forEach(function({iterator}, key))' + ' {\n' + \
-                indent + ' ' * 4 + '// todo\n' + \
-                indent + '});\n'
+               indent + ' ' * 4 + '// todo\n' + \
+               indent + '});\n'
 
     def _after_for_paste(self, iterator, items, max_i, indent):
         self.editor.select_todo_line(2)
+
+    def _gen_if_stub(self, if_text, elif_text, else_text, indent=''):
+        ind = self.indent(indent)
+        s = f'{indent}if({if_text}) ' + '{\n' + \
+            ind + '// todo\n'
+        if elif_text:
+            s += indent + '} ' + f'else if({elif_text}) ' + '{\n' + \
+                 ind + '// todo\n'
+        if else_text:
+            s += indent + '} else {\n' + \
+                 ind + '// todo\n'
+        s += f'{indent}' + '}\n'
+        return s
+
+    def _after_if_paste(self, if_text, elif_text, else_text, indent=''):
+        up = 2
+        if elif_text:
+            up += 2
+        if else_text:
+            up += 2
+        self.editor.select_todo_line(up)

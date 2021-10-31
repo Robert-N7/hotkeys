@@ -5,7 +5,6 @@ from stubs.transform_case import pascal_case, snake_case
 
 
 class PyStub(Stub):
-
     ext = '.py'
     has_privacy = False
     has_return_type = False
@@ -81,10 +80,31 @@ class PyStub(Stub):
     def _gen_for_stub(self, iterator, items, max_i, indent):
         if max_i:
             return f'for {iterator} in range({max_i}):\n' + \
-                    indent + ' ' * 4 + f'x = {items}[{iterator}]\n' + \
-                    indent + ' ' * 4 + '# todo\n'
+                   indent + ' ' * 4 + f'x = {items}[{iterator}]\n' + \
+                   indent + ' ' * 4 + '# todo\n'
         return f'for {iterator} in {items}:\n' + \
-                indent + ' ' * 4 + 'pass # todo\n'
+               indent + ' ' * 4 + 'pass # todo\n'
 
     def _after_for_paste(self, iterator, items, max_i, indent):
-        self.editor.select_todo_line(1)
+        c = 2 if max_i else 1
+        self.editor.select_todo_line(c)
+
+    def _gen_if_stub(self, if_text, elif_text, else_text, indent=''):
+        ind = self.indent(indent)
+        s = f'{indent}if {if_text}:\n' \
+            f'{ind}pass\n'
+        if elif_text:
+            s += f'elif {elif_text}:\n' \
+                 f'{ind}pass\n'
+        if else_text:
+            s += f'else:\n' \
+                 f'{ind}pass\n'
+        return s
+
+    def _after_if_paste(self, if_text, elif_text, else_text, indent=''):
+        count = 1
+        if elif_text:
+            count += 2
+        if else_text:
+            count += 2
+        self.editor.select_todo_line(count)

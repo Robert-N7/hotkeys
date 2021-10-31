@@ -71,6 +71,15 @@ class Stub:
     def __init__(self, editor, project_dir=''):
         self.project_dir = project_dir
         self.editor = editor
+        self.hotkeys = []
+        self._init_hotkeys(self.hotkeys)
+
+    def __del__(self):
+        for x in self.hotkeys:
+            x.unregister()
+
+    def _init_hotkeys(self, hotkeys):
+        pass
 
     def _gen_function_stub(self, name, params, retrn, indent, privacy, return_type, flags):
         raise NotImplementedError()
@@ -93,6 +102,9 @@ class Stub:
     def _gen_for_stub(self, iterator, items, max_i, indent):
         raise NotImplementedError()
 
+    def _gen_if_stub(self, if_text, elif_text, else_text, indent=''):
+        raise NotImplementedError()
+
     def _after_for_paste(self, iterator, items, max_i, indent):
         pass
 
@@ -111,11 +123,12 @@ class Stub:
     def _after_file_create(self, name, directory, class_info):
         clip(os.path.join(directory, name))
 
+    def _after_if_paste(self, if_text, elif_text, else_text, indent=''):
+        pass
+
     def send_to_editor(self, s):
-        start = time.time()
         clip(s)
         self.editor.paste()
-        print(f'Paste took {time.time() - start}')
 
     def create_function(self, name, params, retrn, indent=None, privacy=None, return_type=None, flags=0):
         if indent is None:
@@ -168,3 +181,11 @@ class Stub:
         self.send_to_editor(self._gen_for_stub(iterator, items, max_i, indent))
         self._after_for_paste(iterator, items, max_i, indent)
         return True
+
+    def create_if(self, if_text, elif_text, else_text, indent=''):
+        self.send_to_editor(self._gen_if_stub(if_text, elif_text, else_text, indent))
+        self._after_if_paste(if_text, elif_text, else_text, indent)
+        return True
+
+    def create_return(self):
+        self.send_to_editor('return')

@@ -17,6 +17,7 @@ from stubs.js_stub import JsStub
 from stubs.php_stub import PhpStub
 from stubs.py_stub import PyStub
 from stubs.stub import Stub
+from stubs.window_if import WindowIf
 from stubs.window_load import WindowLoad
 from stubs.window_switch import SwitchWindowStub
 
@@ -39,13 +40,17 @@ class StubController:
         Hotkey('^;', self.show_main_win)
         Hotkey('^m', lambda *args, **kwargs: self.function_window.show())
         Hotkey('^k', lambda *args, **kwargs: self.class_window.show())
-        Hotkey('^i', lambda *args, **kwargs: self.file_window.show())
+        Hotkey('^n', lambda *args, **kwargs: self.file_window.show())
+        Hotkey('^i', lambda *args, **kwargs: self.if_window.show())
         Hotkey('^p', lambda *args, **kwargs: self.stub.create_print())
         Hotkey("^'", lambda *args, **kwargs: self.stub.create_this())
         Hotkey("!d", lambda *args, **kwargs: self.define_window.show())
         Hotkey('!a', lambda *args, **kwargs: self.for_window.show())
         Hotkey('!k', self.show_save_window)
         Hotkey('!l', self.show_load_window)
+        Hotkey('z', lambda *a, **k: self.stub.editor.select_todo_line(0))
+        Hotkey('!z', 'z')
+        Hotkey('!r', lambda *a, **k: self.stub.create_return())
         HK_QUIT_KEY.set_callback(lambda *args, **k: self.main_window.close())
 
         # Number stored hotkeys
@@ -62,6 +67,7 @@ class StubController:
         self.define_window = WindowDefine(None, stub)
         self.for_window = WindowFor(None, stub)
         self.load_window = WindowLoad(None, self)
+        self.if_window = WindowIf(None, stub)
 
     def show_load_window(self, *args, **kwargs):
         self.load_window.set_text(None)
@@ -77,8 +83,9 @@ class StubController:
         ma = min(6, len(params))
         keys = [Qt.Key_1, Qt.Key_2, Qt.Key_3, Qt.Key_4, Qt.Key_5, Qt.Key_6]
         for i in range(ma):
+            param = params[i]
             # remove typing
-            x = params.split(' ')
+            x = param.split(' ')
             self.save(keys[i], x[len(x) - 1])
 
     def load_config(self):

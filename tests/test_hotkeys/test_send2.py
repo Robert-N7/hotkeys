@@ -11,7 +11,7 @@ from stubs.window_stub import WindowStub
 time.sleep(1)
 start = time.time()
 
-send('^+v')
+send('+{end}')
 print(f'Finished in {time.time() - start}')
 
 #
