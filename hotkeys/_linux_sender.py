@@ -3,13 +3,14 @@ import time
 
 from . import _sender
 from Xlib.display import Display
-from Xlib import X
+from Xlib import X, display
 from Xlib.ext.xtest import fake_input
 import Xlib.XK
 
 
 # Taken from PyKeyboard's ctor function.
 _display = Display(os.environ['DISPLAY'])
+root = _display.screen().root
 keyboardMapping = dict([(key, None) for key in _sender.KEY_NAMES])
 keyboardMapping.update({
     'backspace': _display.keysym_to_keycode(Xlib.XK.string_to_keysym('BackSpace')),
@@ -97,6 +98,7 @@ keyboardMapping.update({
     'ctrlright': _display.keysym_to_keycode(Xlib.XK.string_to_keysym('Control_R')),
     'altleft': _display.keysym_to_keycode(Xlib.XK.string_to_keysym('Alt_L')),
     'altright': _display.keysym_to_keycode(Xlib.XK.string_to_keysym('Alt_R')),
+    'mode_switch': _display.keysym_to_keycode(Xlib.XK.string_to_keysym('Mode_Switch')),
     # These are added because unlike a-zA-Z0-9, the single characters do not have a
     ' ': _display.keysym_to_keycode(Xlib.XK.string_to_keysym('space')),
     'space': _display.keysym_to_keycode(Xlib.XK.string_to_keysym('space')),
@@ -139,33 +141,50 @@ keyboardMapping.update({
     '~': _display.keysym_to_keycode(Xlib.XK.string_to_keysym('asciitilde')),
 })
 keyboardMapping['control'] = keyboardMapping['ctrl']
-SHIFT = keyboardMapping['shift']
+
 # Trading memory for time" populate winKB so we don't have to call VkKeyScanA each time.
 for c in """abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890""":
     keyboardMapping[c] = _display.keysym_to_keycode(Xlib.XK.string_to_keysym(c))
 
 
 class LinuxSender(_sender.SendBase):
-    send_delay = 0.00
+
+    hotkey_map = {
+        '^': X.ControlMask,
+        'ctrl': X.ControlMask,
+        'control': X.ControlMask,
+        '+': X.ShiftMask,
+        'shift': X.ShiftMask,
+        '!': X.Mod1Mask,
+        'alt': X.Mod1Mask,
+    }
 
     def _compile_hotkey(self, hotkey):
+        mask = 0
         for x in hotkey:
-            self._compile_keydown(x)
-        for x in reversed(hotkey):
-            self._compile_keyup(x)
+            mask |= self.hotkey_map.get(x, 0)
+        self._compile_keydown(hotkey[-1], mask=mask)
+        self._compile_keyup(hotkey[-1], mask=mask)
 
-    def _compile_keydown(self, key, sleep=True):
+    def _compile_keydown(self, key, sleep=True, mask=0):
         is_shift = self.is_shift_character(key)
+        if is_shift:
+            mask |= X.ShiftMask
         key_codes = self.key_codes
         x = keyboardMapping[key]
-        if is_shift:
-            key_codes.append((SHIFT, True, False, False))
-        key_codes.append((x, True, False, False))
-        if is_shift:
-            key_codes.append((SHIFT, False, False, True))
+        key_codes.append((x,
+                          True,
+                          sleep or len(key_codes) < 3,
+                          mask))
 
-    def _compile_keyup(self, key, sleep=True):
-        self.key_codes.append((keyboardMapping[key], False, sleep, True))
+    def _compile_keyup(self, key, sleep=True, mask=0):
+        is_shift = self.is_shift_character(key)
+        if is_shift:
+            mask |= X.ShiftMask
+        self.key_codes.append((keyboardMapping[key],
+                               False,
+                               sleep or len(self.key_codes) < 3,
+                               mask))
 
     def _compile_press(self, x):
         self._compile_keydown(x, False)
@@ -174,21 +193,26 @@ class LinuxSender(_sender.SendBase):
     def _compile_end(self):
         pass
 
-    def send(self, send_delay=0.00):
+    def send(self, send_delay=0.003):
         # Ensure focused
         focus = _display.get_input_focus()
-        win = focus.focus
-        win.circulate(X.RaiseLowest)
-        win.set_input_focus(focus.revert_to, 0)
-        time.sleep(0.1)
-        _display.sync()
-        sync = True
-        for key, press, delay, sync in self.key_codes:
-            down = X.KeyPress if press else X.KeyRelease
-            fake_input(_display, down, key)
-            if sync:
-                _display.sync()
+        _display.set_input_focus(focus.focus, focus.revert_to, X.CurrentTime)
+        window = focus.focus
+        send_event = getattr(
+            window,
+            'send_event',
+            lambda ev: _display.send_event(window, ev, propagate=True))
+        for key, press, delay, mods in self.key_codes:
+            event = display.event.KeyPress if press else display.event.KeyRelease
+            send_event(event(
+                detail=key,
+                state=mods,
+                time=X.CurrentTime,
+                root=root,
+                window=window,
+                same_screen=0,
+                child=Xlib.X.NONE,
+                root_x=0, root_y=0, event_x=0, event_y=0))
             if delay:
                 time.sleep(send_delay)
-        if not sync:
             _display.sync()

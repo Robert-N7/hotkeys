@@ -4,7 +4,7 @@ import time
 import pyperclip
 from system_hotkey import SystemHotkey
 
-SEND_INTERVAL = 0.00
+SEND_INTERVAL = 0.003
 ALLOW_PASTE = True
 HK_CLIPBOARD = None
 
@@ -121,7 +121,7 @@ class Hotkey():
     def __init__(self, keys, bind_to, raw=True, delay=-1.0):
         try:
             some_object_iterator = iter(bind_to)
-            if raw and ALLOW_PASTE and len(bind_to) > 12:
+            if raw and ALLOW_PASTE and len(bind_to) > 9:
                 self.bind_to = lambda *args, **kwargs: send_paste(bind_to)
             else:
                 self.bind_to = Sender(bind_to, raw)
@@ -181,14 +181,11 @@ class Hotkey():
                 done = True
             i += 1
         self.keys = tuple(hk)
-        if 1:
-            hk.reverse()
-            r = ''
-            for i in range(0, len(hk)):
-                r += '{' + hk[i] + ' up}'
-            self.reset_keys = Sender(r)
-        else:
-            self.reset_keys = None
+        hk.reverse()
+        r = ''
+        for i in range(0, len(hk)):
+            r += '{' + hk[i] + ' up}'
+        self.reset_keys = Sender(r)
 
     def __call__(self, *args, **kwargs):
         kwargs['hotkey'] = self

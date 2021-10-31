@@ -65,4 +65,4 @@ win = MyWin(None, stub)
 HK_QUIT_KEY.set_callback(lambda *a, **k: win.close())
 win.show()
 sys.exit(app.exec_())
-# ly Moses
+# 
