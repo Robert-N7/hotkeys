@@ -4,7 +4,6 @@ import time
 from . import _sender
 from Xlib.display import Display
 from Xlib import X, display
-from Xlib.ext.xtest import fake_input
 import Xlib.XK
 
 

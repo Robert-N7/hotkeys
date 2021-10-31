@@ -1,7 +1,4 @@
 xcffib; sys_platform == 'linux'
 pywin32; sys_platform == 'windows'
 system_hotkey
-pyqt5
 pyperclip
-xpybutil
-pyautogui
