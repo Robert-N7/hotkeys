@@ -29,11 +29,17 @@ class InvalidKeyError(HotkeyError): pass
 
 
 class HKParserError(Exception): pass
+
+
 # endregion
 
 # region send
 def clip(text):
     pyperclip.copy(text)
+
+
+def clip_get():
+    return pyperclip.paste()
 
 
 def clip_wait(amount=0.2):
@@ -61,10 +67,11 @@ def send(text, interval=None, raw=False):
     sender.send(interval or SEND_INTERVAL)
     return sender
 
+
 # endregion
 
 # region Hotkey
-class Hotkey():
+class Hotkey:
     SYS_HOTKEY = SystemHotkey()
     HK_QUIT = False
 
@@ -115,7 +122,7 @@ class Hotkey():
             time.sleep(0.2)
 
     @staticmethod
-    def quit(*args, **kwargs):
+    def quit(hotkey):
         Hotkey.HK_QUIT = True
 
     def __init__(self, keys, bind_to, raw=True, delay=-1.0):
@@ -188,13 +195,12 @@ class Hotkey():
         self.reset_keys = Sender(r)
 
     def __call__(self, *args, **kwargs):
-        kwargs['hotkey'] = self
         # quick pause to release key
         if self.delay > 0:
             time.sleep(self.delay)
         if self.reset_keys:
             self.reset_keys.send()
-        self.bind_to(*args, **kwargs)
+        self.bind_to(self)
 
     def unregister(self):
         self.SYS_HOTKEY.unregister(self.keys)

@@ -40,67 +40,67 @@ class StubController:
         # Editor and Language
         Hotkey('^;', self.show_main_win)
         # Method - Function
-        Hotkey('^m', lambda *args, **kwargs: self.function_window.show())
+        Hotkey('^m', lambda h: self.function_window.show())
         # Class stub
-        Hotkey('^+c', lambda *args, **kwargs: self.class_window.show())
+        Hotkey('^+c', lambda h: self.class_window.show())
         # Create file and class
-        Hotkey('^n', lambda *args, **kwargs: self.file_window.show())
+        Hotkey('^n', lambda h: self.file_window.show())
         # If statement
-        Hotkey('^i', lambda *args, **kwargs: self.if_window.show())
+        Hotkey('^i', lambda h: self.if_window.show())
         # Print
-        Hotkey('^p', lambda *args, **kwargs: self.stub.create_print())
+        Hotkey('^p', lambda h: self.stub.create_print())
         # This, self
-        Hotkey("^'", lambda *args, **kwargs: self.stub.create_this())
+        Hotkey("^'", lambda h: self.stub.create_this())
         # Define var
-        Hotkey("!d", lambda *args, **kwargs: self.define_window.show())
+        Hotkey("!d", lambda h: self.define_window.show())
         # For loop
-        Hotkey('!f', lambda *args, **kwargs: self.for_window.show())
+        Hotkey('!f', lambda h: self.for_window.show())
         # Keep text (save into hotkey)
         Hotkey('!k', self.show_save_window)
         # Load text (load hotkey)
         Hotkey('!l', self.show_load_window)
         # Select line text
-        Hotkey('z', lambda *a, **k: self.stub.editor.select_todo_line(0))
+        Hotkey('z', lambda h: self.stub.editor.select_todo_line(0))
         Hotkey('!z', 'z')
         # Return
-        Hotkey('!r', lambda *a, **k: self.stub.create_return())
+        Hotkey('!r', lambda h: self.stub.create_return())
 
         # Cursor manipulation
         # up
-        Hotkey('!u', lambda *a, **k: self.stub.editor.up())
-        Hotkey('^!u', lambda *a, **k: self.stub.editor.up(10))
-        Hotkey('+!u', lambda *a, **k: self.stub.editor.select_up())
-        Hotkey('^+!u', lambda *a, **k: self.stub.editor.select_up(10))
+        Hotkey('!u', lambda h: self.stub.editor.up())
+        Hotkey('^!u', lambda h: self.stub.editor.up(10))
+        Hotkey('+!u', lambda h: self.stub.editor.select_up())
+        Hotkey('^+!u', lambda h: self.stub.editor.select_up(10))
 
         # down
-        Hotkey('!m', lambda *a, **k: self.stub.editor.down())
-        Hotkey('^!m', lambda *a, **k: self.stub.editor.down(10))
-        Hotkey('+!m', lambda *a, **k: self.stub.editor.select_down())
-        Hotkey('^!+m', lambda *a, **k: self.stub.editor.select_down(10))
+        Hotkey('!m', lambda h: self.stub.editor.down())
+        Hotkey('^!m', lambda h: self.stub.editor.down(10))
+        Hotkey('+!m', lambda h: self.stub.editor.select_down())
+        Hotkey('^!+m', lambda h: self.stub.editor.select_down(10))
 
         # left
-        Hotkey('!h', lambda *a, **k: self.stub.editor.left())
-        Hotkey('^!h', lambda *a, **k: self.stub.editor.ctrl_left())
-        Hotkey('!+h', lambda *a, **k: self.stub.editor.select_left())
+        Hotkey('!h', lambda h: self.stub.editor.left())
+        Hotkey('^!h', lambda h: self.stub.editor.ctrl_left())
+        Hotkey('!+h', lambda h: self.stub.editor.select_left())
 
         # right
-        Hotkey('!;', lambda *a, **k: self.stub.editor.right())
-        Hotkey('^!;', lambda *a, **k: self.stub.editor.ctrl_right())
-        Hotkey('!+;', lambda *a, **k: self.stub.editor.select_right())
+        Hotkey('!;', lambda h: self.stub.editor.right())
+        Hotkey('^!;', lambda h: self.stub.editor.ctrl_right())
+        Hotkey('!+;', lambda h: self.stub.editor.select_right())
 
         # Home/End
-        Hotkey('!b', lambda *a, **k: self.stub.editor.home())
-        Hotkey('!e', lambda *a, **k: self.stub.editor.end())
+        Hotkey('!b', lambda h: self.stub.editor.home())
+        Hotkey('!e', lambda h: self.stub.editor.end())
         # Open Below/Above
-        Hotkey('!o', lambda *a, **k: self.stub.editor.open_line_below())
-        Hotkey('!+o', lambda *a, **k: self.stub.editor.open_line_above())
+        Hotkey('!o', lambda h: self.stub.editor.open_line_below())
+        Hotkey('!+o', lambda h: self.stub.editor.open_line_above())
 
-        HK_QUIT_KEY.set_callback(lambda *args, **k: self.main_window.close())
+        HK_QUIT_KEY.set_callback(lambda h: self.main_window.close())
 
         # Number stored hotkeys
         for i in range(10):
-            Hotkey(f'^{i}', lambda *args, **k: self.load(k['hotkey'].keys[-1]))
-            Hotkey(f'^!{i}', lambda *args, **k: self.store(k['hotkey'].keys[-1]))
+            Hotkey(f'!{i}', lambda h: self.load(h.keys[-1]))
+            Hotkey(f'^!{i}', lambda h: self.store(h.keys[-1]))
 
     def init_windows(self):
         stub = self.stub
@@ -113,11 +113,11 @@ class StubController:
         self.load_window = WindowLoad(None, self)
         self.if_window = WindowIf(None, stub)
 
-    def show_load_window(self, *args, **kwargs):
+    def show_load_window(self, h):
         self.load_window.set_text(None)
         self.load_window.show()
 
-    def show_save_window(self, *args, **kwargs):
+    def show_save_window(self, h):
         text = self.stub.editor.copy()
         if text:
             self.load_window.set_text(text)

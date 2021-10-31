@@ -128,6 +128,11 @@ class SendBase:
     def send(self, send_delay):
         raise NotImplementedError()
 
+    def is_win_active(self, win):
+        return self.get_active_win() == win
+
+    def get_active_win(self):
+        raise NotImplementedError()
 
 KEY_NAMES = [
     "\t",

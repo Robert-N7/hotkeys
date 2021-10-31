@@ -222,3 +222,6 @@ class LinuxSender(_sender.SendBase):
             if delay:
                 time.sleep(send_delay)
             _display.sync()
+
+    def get_active_win(self):
+        return _display.get_input_focus().focus

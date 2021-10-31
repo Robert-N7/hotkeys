@@ -1,4 +1,5 @@
 import os
+import re
 import time
 
 from hotkeys import clip, send
@@ -41,6 +42,19 @@ class Stub:
     has_abstract_classes = True
     has_static_classes = True
     possible_flags = FL_STATIC | FL_ABSTRACT
+    key_words = ['for',
+                 'in',
+                 'if',
+                 'while',
+                 'try',
+                 'except',
+                 'finally',
+                 'catch',
+                 'case',
+                 'break',
+                 'continue',
+                 'switch',
+                 ]
 
     @staticmethod
     def keyword(flag, with_space=False):
@@ -189,3 +203,16 @@ class Stub:
 
     def create_return(self):
         self.send_to_editor('return ')
+
+    def get_iterable_from_line(self, line):
+        line = line.strip()
+        for x in self.key_words:
+            if line.startswith(x):
+                line = line[len(x):].strip('() ')
+        separator = '\\' + self.get_separator()
+        match = re.search(f'(\w+{separator})?\w+s(?=\W)', line)
+        if match:
+            return match.group(0)
+
+    def get_separator(self):
+        return '.'

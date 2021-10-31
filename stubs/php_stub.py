@@ -16,8 +16,7 @@ class PhpStub(Stub):
         hotkeys.append(Hotkey('^.', '.'))
         hotkeys.append(Hotkey('!.', '=>'))
         hotkeys.append(Hotkey('j', '$'))
-        hotkeys.append(Hotkey('!j', 'j'))
-
+        hotkeys.append(Hotkey('!+j', 'j'))
 
     def class_case(self, text):
         return pascal_case(text)
@@ -155,3 +154,6 @@ class PhpStub(Stub):
         if else_text:
             count += 2
         self.editor.select_todo_line(count)
+
+    def get_separator(self):
+        return '->'

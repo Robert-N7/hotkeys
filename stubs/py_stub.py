@@ -25,7 +25,8 @@ class PyStub(Stub):
 
     def process_params(self, params, flags):
         if not flags & self.FL_STATIC and flags & self.FL_ISMETHOD:
-            params.insert(0, 'self')
+            if len(params) < 1 or params[0] != 'self':
+                params.insert(0, 'self')
         return params
 
     def _gen_function_stub(self, name, params, retrn, indent, privacy, return_type, flags):
