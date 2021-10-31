@@ -1,5 +1,4 @@
-
-from hotkeys import Hotkey, send, send_raw
+from hotkeys import Hotkey
 
 h = Hotkey('!d', 'Hello world!', raw=True)
 
