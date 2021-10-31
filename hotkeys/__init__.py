@@ -194,7 +194,7 @@ class Hotkey():
             time.sleep(self.delay)
         if self.reset_keys:
             self.reset_keys.send()
-        self.bind_to()
+        self.bind_to(*args, **kwargs)
 
     def unregister(self):
         self.SYS_HOTKEY.unregister(self.keys)

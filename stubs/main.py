@@ -37,20 +37,64 @@ class StubController:
         self.temp_keys = {}
         self.init_windows()
         # Hotkeys
+        # Editor and Language
         Hotkey('^;', self.show_main_win)
+        # Method - Function
         Hotkey('^m', lambda *args, **kwargs: self.function_window.show())
-        Hotkey('^k', lambda *args, **kwargs: self.class_window.show())
+        # Class stub
+        Hotkey('^+c', lambda *args, **kwargs: self.class_window.show())
+        # Create file and class
         Hotkey('^n', lambda *args, **kwargs: self.file_window.show())
+        # If statement
         Hotkey('^i', lambda *args, **kwargs: self.if_window.show())
+        # Print
         Hotkey('^p', lambda *args, **kwargs: self.stub.create_print())
+        # This, self
         Hotkey("^'", lambda *args, **kwargs: self.stub.create_this())
+        # Define var
         Hotkey("!d", lambda *args, **kwargs: self.define_window.show())
-        Hotkey('!a', lambda *args, **kwargs: self.for_window.show())
+        # For loop
+        Hotkey('!f', lambda *args, **kwargs: self.for_window.show())
+        # Keep text (save into hotkey)
         Hotkey('!k', self.show_save_window)
+        # Load text (load hotkey)
         Hotkey('!l', self.show_load_window)
+        # Select line text
         Hotkey('z', lambda *a, **k: self.stub.editor.select_todo_line(0))
         Hotkey('!z', 'z')
+        # Return
         Hotkey('!r', lambda *a, **k: self.stub.create_return())
+
+        # Cursor manipulation
+        # up
+        Hotkey('!u', lambda *a, **k: self.stub.editor.up())
+        Hotkey('^!u', lambda *a, **k: self.stub.editor.up(10))
+        Hotkey('+!u', lambda *a, **k: self.stub.editor.select_up())
+        Hotkey('^+!u', lambda *a, **k: self.stub.editor.select_up(10))
+
+        # down
+        Hotkey('!m', lambda *a, **k: self.stub.editor.down())
+        Hotkey('^!m', lambda *a, **k: self.stub.editor.down(10))
+        Hotkey('+!m', lambda *a, **k: self.stub.editor.select_down())
+        Hotkey('^!+m', lambda *a, **k: self.stub.editor.select_down(10))
+
+        # left
+        Hotkey('!h', lambda *a, **k: self.stub.editor.left())
+        Hotkey('^!h', lambda *a, **k: self.stub.editor.ctrl_left())
+        Hotkey('!+h', lambda *a, **k: self.stub.editor.select_left())
+
+        # right
+        Hotkey('!;', lambda *a, **k: self.stub.editor.right())
+        Hotkey('^!;', lambda *a, **k: self.stub.editor.ctrl_right())
+        Hotkey('!+;', lambda *a, **k: self.stub.editor.select_right())
+
+        # Home/End
+        Hotkey('!b', lambda *a, **k: self.stub.editor.home())
+        Hotkey('!e', lambda *a, **k: self.stub.editor.end())
+        # Open Below/Above
+        Hotkey('!o', lambda *a, **k: self.stub.editor.open_line_below())
+        Hotkey('!+o', lambda *a, **k: self.stub.editor.open_line_above())
+
         HK_QUIT_KEY.set_callback(lambda *args, **k: self.main_window.close())
 
         # Number stored hotkeys
@@ -106,7 +150,6 @@ class StubController:
 
     @staticmethod
     def _guess_project_path(path):
-        name = ''
         path_names = []
         while len(path) > 1:
             dir, name = os.path.split(path)
@@ -139,6 +182,7 @@ class StubController:
         editor = self.editors[editor]()
         self.stub = self.stubs[language](editor, project_dir)
         self.init_windows()
+
 
 def main():
     app = QApplication([])

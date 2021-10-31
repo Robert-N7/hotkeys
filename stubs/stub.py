@@ -188,4 +188,4 @@ class Stub:
         return True
 
     def create_return(self):
-        self.send_to_editor('return')
+        self.send_to_editor('return ')

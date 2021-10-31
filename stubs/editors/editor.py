@@ -25,20 +25,38 @@ class Editor:
     def up(self, amount=1):
         send('{up ' + str(amount) + '}')
 
+    def select_up(self, amount=1):
+        send('+{up ' + str(amount) + '}')
+
     def down(self, amount=1):
         send('{down ' + str(amount) + '}')
+
+    def select_down(self, amount=1):
+        send('+{down ' + str(amount) + '}')
 
     def left(self, amount=1):
         send('{left ' + str(amount) + '}')
 
+    def select_left(self, amount=1):
+        send('+^{left ' + str(amount) + '}')
+
     def right(self, amount=1):
         send('{right ' + str(amount) + '}')
+
+    def select_right(self, amount=1):
+        send('+^{right ' + str(amount) + '}')
 
     def home(self):
         send('{home}')
 
     def end(self):
         send('{end}')
+
+    def open_line_below(self):
+        send('{end}{return}')
+
+    def open_line_above(self):
+        send('{up}{end}{return}')
 
     def select_end(self):
         send('+{end}')
@@ -49,10 +67,10 @@ class Editor:
     def space(self):
         send('{space}')
 
-    def ctrl_left(self, amount):
+    def ctrl_left(self, amount=1):
         send('^{left ' + str(amount) + '}')
 
-    def ctrl_right(self, amount):
+    def ctrl_right(self, amount=1):
         send('^{right ' + str(amount) + '}')
 
     def select_todo_line(self, up_amount=1):

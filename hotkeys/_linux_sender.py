@@ -170,6 +170,8 @@ class LinuxSender(_sender.SendBase):
         if not x:
             keyboardMapping[key] = x = \
                 _display.keysym_to_keycode(Xlib.XK.string_to_keysym(key))
+            if not x:
+                raise ValueError(f'Unknown Key {key}')
         key_codes.append((x,
                           True,
                           sleep or len(key_codes) < 3,
@@ -183,6 +185,8 @@ class LinuxSender(_sender.SendBase):
         if not x:
             keyboardMapping[key] = x = \
                 _display.keysym_to_keycode(Xlib.XK.string_to_keysym(key))
+            if not x:
+                raise ValueError(f'Unknown Key {key}')
         self.key_codes.append((x,
                                False,
                                sleep or len(self.key_codes) < 3,
