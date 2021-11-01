@@ -165,7 +165,7 @@ class LinuxSender(_sender.SendBase):
         if is_shift:
             mask |= X.ShiftMask
         key_codes = self.key_codes
-        x = keyboardMapping[key]
+        x = keyboardMapping.get(key)
         if not x:
             keyboardMapping[key] = x = \
                 _display.keysym_to_keycode(Xlib.XK.string_to_keysym(key))
@@ -180,7 +180,7 @@ class LinuxSender(_sender.SendBase):
         is_shift = self.is_shift_character(key)
         if is_shift:
             mask |= X.ShiftMask
-        x = keyboardMapping[key]
+        x = keyboardMapping.get(key)
         if not x:
             keyboardMapping[key] = x = \
                 _display.keysym_to_keycode(Xlib.XK.string_to_keysym(key))

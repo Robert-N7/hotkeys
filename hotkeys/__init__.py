@@ -1,5 +1,6 @@
 import platform
 import time
+import traceback
 
 import pyperclip
 from system_hotkey import SystemHotkey
@@ -72,9 +73,12 @@ def send(text, interval=None, raw=False):
 
 # region Hotkey
 class Hotkey:
+    ON_ERR_QUIT = 0
+    ON_ERR_CONTINUE = 1
     SYS_HOTKEY = SystemHotkey()
     hk_quit = False
     pause = False
+    err_handler = ON_ERR_CONTINUE
 
     KEY_REMAP = {
         'esc': 'escape',
@@ -207,7 +211,14 @@ class Hotkey:
             time.sleep(self.delay)
         if self.reset_keys:
             self.reset_keys.send()
-        self.bind_to(self)
+        try:
+            self.bind_to(self)
+        except Exception as e:
+            if self.err_handler == self.ON_ERR_QUIT:
+                Hotkey.hk_quit = True
+                raise e
+            elif self.err_handler == self.ON_ERR_CONTINUE:
+                print(traceback.format_exc())
 
     def unregister(self):
         self.SYS_HOTKEY.unregister(self.keys)
