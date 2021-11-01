@@ -9,13 +9,10 @@ SEND_INTERVAL = 0.003
 ALLOW_PASTE = True
 HK_CLIPBOARD = None
 
-# if sys.platform == "darwin":
-#     from . import _pyautogui_osx as platformModule
-# elif sys.platform == "win32":
-#     from . import _pyautogui_win as platformModule
-#
 if platform.system() == "Linux":
     from ._linux_sender import LinuxSender as Sender
+elif platform.system() == "Windows":
+    from ._win_sender import WinSender as Sender
 else:
     raise NotImplementedError("Your platform (%s) is not supported by Hotkeys." % (platform.system()))
 
