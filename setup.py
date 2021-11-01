@@ -12,6 +12,8 @@ if p == 'Windows':
     requirements.append('pywin32')
 elif p == 'Linux':
     requirements.append('xcffib')
+    requirements.append('xpybutil')
+    requirements.append('Xlib')
 
 setup(
     name='hotkeys',
