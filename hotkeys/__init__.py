@@ -73,7 +73,8 @@ def send(text, interval=None, raw=False):
 # region Hotkey
 class Hotkey:
     SYS_HOTKEY = SystemHotkey()
-    HK_QUIT = False
+    hk_quit = False
+    pause = False
 
     KEY_REMAP = {
         'esc': 'escape',
@@ -118,12 +119,16 @@ class Hotkey:
 
     @staticmethod
     def wait():
-        while not Hotkey.HK_QUIT:
+        while not Hotkey.hk_quit:
             time.sleep(0.2)
 
     @staticmethod
-    def quit(hotkey):
-        Hotkey.HK_QUIT = True
+    def quit(hotkey=None):
+        Hotkey.hk_quit = True
+
+    @staticmethod
+    def toggle_pause(hotkey=None):
+        Hotkey.pause = not Hotkey.pause
 
     def __init__(self, keys, bind_to, raw=True, delay=-1.0):
         try:
@@ -195,6 +200,8 @@ class Hotkey:
         self.reset_keys = Sender(r)
 
     def __call__(self, *args, **kwargs):
+        if self.pause:
+            return
         # quick pause to release key
         if self.delay > 0:
             time.sleep(self.delay)
