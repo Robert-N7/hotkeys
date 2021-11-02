@@ -74,7 +74,8 @@ class Hotkey:
     ON_ERR_CONTINUE = 1
     SYS_HOTKEY = SystemHotkey()
     hk_quit = False
-    pause = False
+    hk_pause = False
+    paused = []
     err_handler = ON_ERR_CONTINUE
 
     KEY_REMAP = {
@@ -129,7 +130,18 @@ class Hotkey:
 
     @staticmethod
     def toggle_pause(hotkey=None):
-        Hotkey.pause = not Hotkey.pause
+        Hotkey.unpause() if Hotkey.hk_pause else Hotkey.pause()
+
+    @staticmethod
+    def unpause(hotkey=None):
+        Hotkey.hk_pause = False
+        for x in Hotkey.paused:
+            x.set_keys(x.original_keys)
+        Hotkey.paused = []
+
+    @staticmethod
+    def pause(hotkey=None):
+        Hotkey.hk_pause = True
 
     def __init__(self, keys, bind_to, raw=True, delay=-1.0):
         try:
@@ -144,6 +156,8 @@ class Hotkey:
             delay = 0.03
         self.set_keys(keys)
         self.delay = delay
+
+    def register(self):
         try:
             self.SYS_HOTKEY.register(self.keys, callback=self)
         except KeyError as e:
@@ -154,6 +168,7 @@ class Hotkey:
             self.unregister()
         if type(text) is not str:
             return text
+        self.original_keys = text
         hk = []
         done = literal = False
         i = 0
@@ -199,9 +214,12 @@ class Hotkey:
         for i in range(0, len(hk)):
             r += '{' + hk[i] + ' up}'
         self.reset_keys = Sender(r)
+        self.register()
 
     def __call__(self, *args, **kwargs):
-        if self.pause:
+        if self.hk_pause and self.bind_to not in (self.toggle_pause, self.quit):
+            self.unregister()
+            send(self.original_keys)
             return
         # quick pause to release key
         if self.delay > 0:
@@ -225,5 +243,5 @@ class Hotkey:
         self.bind_to = callback
 
 
-HK_QUIT_KEY = Hotkey('^{Esc}', Hotkey.quit)
+HK_QUIT_KEY = Hotkey('^{escape}', Hotkey.quit)
 # endregion
