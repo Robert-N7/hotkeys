@@ -3,17 +3,18 @@ Hotkeys is a package for creating system hotkeys,
 and sending key-strokes to the screen.
 
 # Hotkeys Setup
-First install any dependencies for your platform.
+First install any dependencies for your platform, then install python packages.
+
 ## Ubuntu
 ```
 sudo apt-get install python3-tk python3-dev xsel
 ```
 
 ## Windows
-Currently unsupported
+Supported - No dependencies
 
 ## Mac
-Currently unsupported
+Unsupported
 
 ## Install python packages
 
@@ -36,7 +37,7 @@ The first parameter to Hotkey is the key trigger, note special keys:
 The next parameter is what to bind to, which can be text to send, or a custom function.
 `raw` tells hotkey to process it as raw text rather than binding special keys. 
 `Hotkey.wait()` keeps the script running indefinitely until `Hotkey.quit()` is called.
-`Ctrl+Escape` is set by default as the quit hotkey.
+`Shift+Escape` is set by default as the quit hotkey.
 
 ## Sending special keys
 In addition to the special keys mentioned above, hotkey can send other keys in brackets.
@@ -44,3 +45,12 @@ In addition to the special keys mentioned above, hotkey can send other keys in b
 send('^{end}')
 ```
 Sends Ctrl+End to the current window.
+
+## Pause hotkeys
+Sometimes it is useful to pause hotkeys to resume normal functionality:
+
+```
+Hotkey('{pause}', Hotkey.toggle_pause)
+```
+Here we create a hotkey using the `pause` button that toggles all other hotkeys.
+Hotkeys connected to toggle_pause, unpause, or quit will still operate as normal during pause.

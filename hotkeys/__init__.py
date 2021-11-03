@@ -11,8 +11,10 @@ HK_CLIPBOARD = None
 
 if platform.system() == "Linux":
     from ._linux_sender import LinuxSender as Sender
+    from ._linux_sender import KEY_REMAP
 elif platform.system() == "Windows":
     from ._win_sender import WinSender as Sender
+    from ._win_sender import KEY_REMAP
 else:
     raise NotImplementedError("Your platform (%s) is not supported by Hotkeys." % (platform.system()))
 
@@ -78,47 +80,6 @@ class Hotkey:
     paused = []
     err_handler = ON_ERR_CONTINUE
 
-    KEY_REMAP = {
-        'esc': 'escape',
-        ' ': "space",
-        '\t': "tab",
-        '\n': "return",
-        '\r': "return",
-        '\e': "escape",
-        '!': "exclam",
-        '#': "numbersign",
-        '%': "percent",
-        '$': "dollar",
-        '&': "ampersand",
-        '"': "quotedbl",
-        '\'': "apostrophe",
-        '(': "parenleft",
-        ')': "parenright",
-        '*': "asterisk",
-        '=': "equal",
-        '+': "plus",
-        ',': "comma",
-        '-': "minus",
-        '.': "period",
-        '/': "slash",
-        ':': "colon",
-        ';': "semicolon",
-        '<': "less",
-        '>': "greater",
-        '?': "question",
-        '@': "at",
-        '[': "bracketleft",
-        ']': "bracketright",
-        '\\': "backslash",
-        '^': "asciicircum",
-        '_': "underscore",
-        '`': "grave",
-        '{': "braceleft",
-        '|': "bar",
-        '}': "braceright",
-        '~': "asciitilde"
-    }
-
     @staticmethod
     def wait():
         while not Hotkey.hk_quit:
@@ -159,7 +120,8 @@ class Hotkey:
 
     def register(self):
         try:
-            self.SYS_HOTKEY.register(self.keys, callback=self)
+            keys = [KEY_REMAP.get(x) or x for x in self.keys]
+            self.SYS_HOTKEY.register(keys, callback=self)
         except KeyError as e:
             raise InvalidKeyError(str(e), self)
 
@@ -193,9 +155,8 @@ class Hotkey:
                     j = i
                     while text[j] != '}':
                         j += 1
-                    key = text[i:j]
-                    rkey = self.KEY_REMAP.get(key.lower())
-                    hk.append(rkey or key)
+                    key = text[i:j].lower()
+                    hk.append(key)
                     i = j
                     done = True
                 else:
@@ -204,8 +165,7 @@ class Hotkey:
                 send_literal = True
                 literal = False
             if send_literal:
-                rkey = self.KEY_REMAP.get(c)
-                hk.append(rkey or c)
+                hk.append(c)
                 done = True
             i += 1
         self.keys = tuple(hk)
@@ -217,8 +177,10 @@ class Hotkey:
         self.register()
 
     def __call__(self, *args, **kwargs):
-        if self.hk_pause and self.bind_to not in (self.toggle_pause, self.quit):
+        if self.hk_pause and self.bind_to not in (self.toggle_pause, self.quit, self.unpause):
             self.unregister()
+            self.paused.append(self)
+            time.sleep(0.01)
             send(self.original_keys)
             return
         # quick pause to release key
@@ -243,5 +205,5 @@ class Hotkey:
         self.bind_to = callback
 
 
-HK_QUIT_KEY = Hotkey('^{escape}', Hotkey.quit)
+HK_QUIT_KEY = Hotkey('+{escape}', Hotkey.quit)
 # endregion

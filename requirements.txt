@@ -1,6 +1,6 @@
 xcffib; sys_platform == 'linux'
 xpybutil; sys_platform == 'linux'
 Xlib; sys_platform == 'linux'
-pywin32; sys_platform == 'windows'
+pywin32; platform_system == 'Windows'
 system_hotkey
 pyperclip

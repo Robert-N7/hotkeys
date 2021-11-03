@@ -131,6 +131,7 @@ keyboardMapping.update({
     'launchapp1': 0xb6,  # VK_LAUNCH_APP1
     'launchapp2': 0xb7,  # VK_LAUNCH_APP2
 })
+keyboardMapping['control'] = keyboardMapping['ctrl']
 
 for c in range(32, 128):
     keyboardMapping[chr(c)] = ctypes.windll.user32.VkKeyScanA(ctypes.wintypes.WCHAR(chr(c)))
@@ -180,12 +181,13 @@ class WinSender(SendBase):
     def _compile_end(self):
         pass
 
-    def send(self, send_delay):
-        for key, press, delay, m in self.key_codes:
+    def send(self, send_delay=0.003):
+        for key, press, delay in self.key_codes:
             ctypes.windll.user32.keybd_event(key, 0, press, 0)
 
     def get_active_win(self):
         pass
 
-    def __init__(self, text):
-        super().__init__(text)
+
+# hotkey registry remapper
+KEY_REMAP = {}

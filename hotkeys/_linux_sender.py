@@ -224,3 +224,46 @@ class LinuxSender(_sender.SendBase):
 
     def get_active_win(self):
         return _display.get_input_focus().focus
+
+
+# Hotkeys registry remapping
+KEY_REMAP = {
+    'esc': 'escape',
+    ' ': "space",
+    '\t': "tab",
+    '\n': "return",
+    '\r': "return",
+    '\e': "escape",
+    '!': "exclam",
+    '#': "numbersign",
+    '%': "percent",
+    '$': "dollar",
+    '&': "ampersand",
+    '"': "quotedbl",
+    '\'': "apostrophe",
+    '(': "parenleft",
+    ')': "parenright",
+    '*': "asterisk",
+    '=': "equal",
+    '+': "plus",
+    ',': "comma",
+    '-': "minus",
+    '.': "period",
+    '/': "slash",
+    ':': "colon",
+    ';': "semicolon",
+    '<': "less",
+    '>': "greater",
+    '?': "question",
+    '@': "at",
+    '[': "bracketleft",
+    ']': "bracketright",
+    '\\': "backslash",
+    '^': "asciicircum",
+    '_': "underscore",
+    '`': "grave",
+    '{': "braceleft",
+    '|': "bar",
+    '}': "braceright",
+    '~': "asciitilde"
+}
