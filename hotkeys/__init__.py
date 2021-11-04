@@ -192,7 +192,7 @@ class Hotkey:
             self.bind_to(self)
         except Exception as e:
             if self.err_handler == self.ON_ERR_QUIT:
-                Hotkey.hk_quit = True
+                Hotkey.quit(self)
                 raise e
             elif self.err_handler == self.ON_ERR_CONTINUE:
                 print(traceback.format_exc())
