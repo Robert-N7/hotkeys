@@ -151,7 +151,8 @@ class WinSender(SendBase):
 
     def _compile_keyup(self, key, sleep=True):
         needsShift = self.is_shift_character(key)
-        mods, vkCode = divmod(keyboardMapping[key], 0x100)
+        code = self.__get_code(key)
+        mods, vkCode = divmod(code, 0x100)
 
         for apply_mod, vk_mod in [(mods & 4, 0x12), (mods & 2, 0x11),
                                   (mods & 1 or needsShift, 0x10)]:  # HANKAKU not supported! mods & 8
@@ -163,9 +164,17 @@ class WinSender(SendBase):
             if apply_mod:
                 self.key_codes.append((vk_mod, KEYEVENTF_KEYUP, sleep))
 
+    @staticmethod
+    def __get_code(key):
+        code = keyboardMapping[key]
+        if not code:
+            raise KeyError(key)
+        return code
+
     def _compile_keydown(self, key, sleep=True):
         needsShift = self.is_shift_character(key)
-        mods, vkCode = divmod(keyboardMapping[key], 0x100)
+        code = self.__get_code(key)
+        mods, vkCode = divmod(code, 0x100)
 
         for apply_mod, vk_mod in [(mods & 4, 0x12), (mods & 2, 0x11),
                                   (mods & 1 or needsShift, 0x10)]:  # HANKAKU not supported! mods & 8
@@ -191,3 +200,48 @@ class WinSender(SendBase):
 
 # hotkey registry remapper
 KEY_REMAP = {}
+
+# Hotkeys registry remapping
+from system_hotkey import vk_codes
+vk_codes.update({
+    'numlock': 0x90,
+    'scrolllock': 0x91,
+    'lshift': 0xA0,
+    'rshift': 0xA1,
+    'lcontrol': 0xA2,
+    'rcontrol': 0xA3,
+    'lmenu': 0xA4,
+    'rmenu': 0xA5,
+    'browser_back': 0xA6,
+    'browser_forward': 0xA7,
+    'browser_refresh': 0xA8,
+    'browser_stop': 0xA9,
+    'browser_search': 0xAA,
+    'browser_favorites': 0xAB,
+    'browser_home': 0xAC,
+    'volume_mute': 0xAD,
+    'volume_down': 0xAE,
+    'volume_up': 0xAF,
+    'media_next_track': 0xB0,
+    'media_prev_track': 0xB1,
+    'media_stop': 0xB2,
+    'media_play_pause': 0xB3,
+    'launch_mail': 0xB4,
+    'launch_media_select': 0xB5,
+    'launch_app1': 0xB6,
+    'launch_app2': 0xB7,
+    ';': 0xBA,
+    '+': 0xBB,
+    ',': 0xBC,
+    '-': 0xBD,
+    '.': 0xBE,
+    '/': 0xBF,
+    '`': 0xC0,
+    '[': 0xDB,
+    '\\': 0xDC,
+    ']': 0xDD,
+    "'": 0xDE,
+    'play': 0xFA,
+    'zoom': 0xFB,
+    'clear': 0xFE,
+})
