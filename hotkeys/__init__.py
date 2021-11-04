@@ -204,6 +204,4 @@ class Hotkey:
     def set_callback(self, callback):
         self.bind_to = callback
 
-
-HK_QUIT_KEY = Hotkey('+{escape}', Hotkey.quit)
 # endregion

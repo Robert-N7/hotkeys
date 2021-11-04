@@ -1,5 +1,6 @@
 from hotkeys import Hotkey
 
+Hotkey('+{escape}', Hotkey.quit)
 h = Hotkey('^d', 'Hello world!', raw=True)
 x = []
 # create error
