@@ -198,7 +198,7 @@ class Hotkey:
                 print(traceback.format_exc())
 
     def unregister(self):
-        self.SYS_HOTKEY.unregister(self.keys)
+        self.SYS_HOTKEY.unregister([KEY_REMAP.get(x) or x for x in self.keys])
         self.keys = None
 
     def set_callback(self, callback):
