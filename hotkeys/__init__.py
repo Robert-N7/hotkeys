@@ -1,4 +1,5 @@
 import platform
+import sys
 import time
 import traceback
 
@@ -77,6 +78,7 @@ class Hotkey:
     SYS_HOTKEY = SystemHotkey()
     hk_quit = False
     hk_pause = False
+    hk_quit_callback = None
     paused = []
     err_handler = ON_ERR_CONTINUE
 
@@ -88,6 +90,14 @@ class Hotkey:
     @staticmethod
     def quit(hotkey=None):
         Hotkey.hk_quit = True
+        Hotkey.paused = None
+        Hotkey.SYS_HOTKEY = None
+        if Hotkey.hk_quit_callback:
+            Hotkey.hk_quit_callback()
+
+    @staticmethod
+    def set_quit(fptr):
+        Hotkey.hk_quit_callback = fptr
 
     @staticmethod
     def toggle_pause(hotkey=None):
@@ -104,7 +114,8 @@ class Hotkey:
     def pause(hotkey=None):
         Hotkey.hk_pause = True
 
-    def __init__(self, keys, bind_to, raw=True, delay=-1.0):
+    def __init__(self, keys, bind_to, raw=True, delay=-1.0, overwrite=False):
+        self.overwrite = overwrite
         try:
             some_object_iterator = iter(bind_to)
             if raw and ALLOW_PASTE and len(bind_to) > 9:
@@ -115,13 +126,13 @@ class Hotkey:
             self.bind_to = bind_to
         if delay < 0.0:
             delay = 0.03
-        self.set_keys(keys)
         self.delay = delay
+        self.set_keys(keys)
 
     def register(self):
         try:
             keys = [KEY_REMAP.get(x) or x for x in self.keys]
-            self.SYS_HOTKEY.register(keys, callback=self)
+            self.SYS_HOTKEY.register(keys, callback=self, overwrite=self.overwrite)
         except KeyError as e:
             raise InvalidKeyError(str(e), self)
 
@@ -191,7 +202,10 @@ class Hotkey:
         try:
             self.bind_to(self)
         except Exception as e:
-            if self.err_handler == self.ON_ERR_QUIT:
+            if self.bind_to is self.quit:
+                # quit method failed, try direct approach
+                sys.exit(1)
+            elif self.err_handler == self.ON_ERR_QUIT:
                 Hotkey.quit(self)
                 raise e
             elif self.err_handler == self.ON_ERR_CONTINUE:
@@ -204,4 +218,33 @@ class Hotkey:
     def set_callback(self, callback):
         self.bind_to = callback
 
+
 # endregion
+if platform.system() == "Linux":
+    # Note only works if using xcb lib
+    from system_hotkey.xpybutil_keybind import get_min_max_keycode, __kbmap, get_keysym
+    from system_hotkey.keysymdef import keysyms
+
+    # optimize for keycode lookup
+    KEYCODE_LOOKUP = {}
+    mn, mx = get_min_max_keycode()
+    cols = __kbmap.keysyms_per_keycode
+    for i in range(mn, mx + 1):
+        found = False
+        for j in range(0, cols):
+            ks = get_keysym(i, col=j)
+            if ks:
+                if found and not KEYCODE_LOOKUP.get(ks):
+                    KEYCODE_LOOKUP[ks] = i
+                    break
+                KEYCODE_LOOKUP[ks] = i
+                found = True
+
+    def lookup_key_code(kstr):
+        if kstr in keysyms:
+            return KEYCODE_LOOKUP.get(keysyms[kstr])
+        elif len(kstr) > 1 and kstr.capitalize() in keysyms:
+            return KEYCODE_LOOKUP.get(keysyms[kstr.capitalize()])
+        return
+
+    Hotkey.SYS_HOTKEY._get_keycode = lookup_key_code
