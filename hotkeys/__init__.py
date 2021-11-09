@@ -1,4 +1,5 @@
 import platform
+import sys
 import time
 import traceback
 
@@ -191,7 +192,10 @@ class Hotkey:
         try:
             self.bind_to(self)
         except Exception as e:
-            if self.err_handler == self.ON_ERR_QUIT:
+            if self.bind_to is self.quit:
+                # quit method failed, try direct approach
+                sys.exit(1)
+            elif self.err_handler == self.ON_ERR_QUIT:
                 Hotkey.quit(self)
                 raise e
             elif self.err_handler == self.ON_ERR_CONTINUE:
