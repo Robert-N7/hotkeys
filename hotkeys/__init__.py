@@ -237,8 +237,9 @@ if platform.system() == "Linux":
                 if found and not KEYCODE_LOOKUP.get(ks):
                     KEYCODE_LOOKUP[ks] = i
                     break
-                KEYCODE_LOOKUP[ks] = i
-                found = True
+                if not KEYCODE_LOOKUP.get(ks):
+                    KEYCODE_LOOKUP[ks] = i
+                    found = True
 
     def lookup_key_code(kstr):
         if kstr in keysyms:
