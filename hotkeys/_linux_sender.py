@@ -265,5 +265,6 @@ KEY_REMAP = {
     '{': "braceleft",
     '|': "bar",
     '}': "braceright",
-    '~': "asciitilde"
+    '~': "asciitilde",
+
 }

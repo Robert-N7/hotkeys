@@ -169,7 +169,6 @@ class Hotkey:
                     key = text[i:j].lower()
                     hk.append(key)
                     i = j
-                    done = True
                 else:
                     send_literal = True
             else:
@@ -220,10 +219,39 @@ class Hotkey:
 
 
 # endregion
+
 if platform.system() == "Linux":
     # Note only works if using xcb lib
     from system_hotkey.xpybutil_keybind import get_min_max_keycode, __kbmap, get_keysym
     from system_hotkey.keysymdef import keysyms
+
+    def set_key_map(mods=None, ignore_mods=None, reset=False):
+        if mods:
+            mods = {x.lower(): mods[x] for x in mods}
+            modders = Hotkey.SYS_HOTKEY.modders
+            if reset:
+                modders.clear()
+            reversed = {v: k for k, v in modders.items()}
+            for x in mods:
+                if mods[x] in reversed:
+                    KEY_REMAP[x] = reversed[mods[x]]
+                else:
+                    modders[x] = mods[x]
+            Hotkey.SYS_HOTKEY.get_modifiersym = lambda state: [
+                k for k, v in Hotkey.SYS_HOTKEY.modders.items() if state & v
+            ]
+            Sender.hotkey_map.update(mods)
+
+        if ignore_mods:
+            for i in range(len(ignore_mods) - 1):
+                x = ignore_mods[i]
+                for j in range(i + 1, len(ignore_mods)):
+                    x |= ignore_mods[j]
+                    ignore_mods.append(x)
+            ignore = set(ignore_mods)
+            ignore.add(0)
+            Hotkey.SYS_HOTKEY.trivial_mods = ignore
+
 
     # optimize for keycode lookup
     KEYCODE_LOOKUP = {}
@@ -241,11 +269,13 @@ if platform.system() == "Linux":
                     KEYCODE_LOOKUP[ks] = i
                     found = True
 
+
     def lookup_key_code(kstr):
         if kstr in keysyms:
             return KEYCODE_LOOKUP.get(keysyms[kstr])
         elif len(kstr) > 1 and kstr.capitalize() in keysyms:
             return KEYCODE_LOOKUP.get(keysyms[kstr.capitalize()])
         return
+
 
     Hotkey.SYS_HOTKEY._get_keycode = lookup_key_code
