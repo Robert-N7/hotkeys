@@ -13,9 +13,27 @@ HK_CLIPBOARD = None
 if platform.system() == "Linux":
     from ._linux_sender import LinuxSender as Sender
     from ._linux_sender import KEY_REMAP
+
+    def run(hk):
+        return hk.bound_method_callback(hk)
 elif platform.system() == "Windows":
     from ._win_sender import WinSender as Sender
     from ._win_sender import KEY_REMAP
+
+    def run(hk):
+        # On windows, if we finish quickly send any modifier keys again
+        # This allows us to hold modifiers down
+        start = time.time()
+        result = hk.bound_method_callback(hk)
+        # 0.25 secs is about the shortest amount of time to hold a key
+        # Any shorter press will result in the key remaining in the held down state
+        # Any execution time longer than 0.25 will have to re-press the modifiers down
+        # In the future, it would be better to detect what state the key is in and match it
+        if time.time() - start < 0.25:
+            keys = Sender(['{' + hk.keys[i] + ' down}' for i in range(len(hk.keys) - 1)])
+            keys.send()
+        return result
+
 else:
     raise NotImplementedError("Your platform (%s) is not supported by Hotkeys." % (platform.system()))
 
@@ -114,30 +132,29 @@ class Hotkey:
     def pause(hotkey=None):
         Hotkey.hk_pause = True
 
-    def __init__(self, keys, bind_to, raw=True, delay=-1.0, overwrite=False):
+    def __init__(self, keys, bind=None, raw=True, delay=-1.0, overwrite=False):
         self.overwrite = overwrite
-        try:
-            some_object_iterator = iter(bind_to)
-            if raw and ALLOW_PASTE and len(bind_to) > 9:
-                self.bind_to = lambda *args, **kwargs: send_paste(bind_to)
-            else:
-                self.bind_to = Sender(bind_to, raw)
-        except TypeError as te:
-            self.bind_to = bind_to
+        self.__run_method = run
+        self.is_registered = False
         if delay < 0.0:
             delay = 0.03
-        self.delay = delay
+        self.__sleep_delay = delay
+        if bind:
+            self.bind_to(bind, raw)
         self.set_keys(keys)
 
     def register(self):
+        if self.is_registered:
+            return
         try:
             keys = [KEY_REMAP.get(x) or x for x in self.keys]
             self.SYS_HOTKEY.register(keys, callback=self, overwrite=self.overwrite)
+            self.is_registered = True
         except KeyError as e:
             raise InvalidKeyError(str(e), self)
 
     def set_keys(self, text):
-        if hasattr(self, 'keys') and self.keys:
+        if self.is_registered:
             self.unregister()
         if type(text) is not str:
             return text
@@ -187,21 +204,21 @@ class Hotkey:
         self.register()
 
     def __call__(self, *args, **kwargs):
-        if self.hk_pause and self.bind_to not in (self.toggle_pause, self.quit, self.unpause):
+        if self.hk_pause and self.bound_method_callback not in (self.toggle_pause, self.quit, self.unpause):
             self.unregister()
             self.paused.append(self)
             time.sleep(0.01)
             send(self.original_keys)
             return
         # quick pause to release key
-        if self.delay > 0:
-            time.sleep(self.delay)
+        if self.__sleep_delay > 0:
+            time.sleep(self.__sleep_delay)
         if self.reset_keys:
             self.reset_keys.send()
         try:
-            self.bind_to(self)
+            self.__run_method(self)
         except Exception as e:
-            if self.bind_to is self.quit:
+            if self.bound_method_callback is self.quit:
                 # quit method failed, try direct approach
                 sys.exit(1)
             elif self.err_handler == self.ON_ERR_QUIT:
@@ -211,11 +228,20 @@ class Hotkey:
                 print(traceback.format_exc())
 
     def unregister(self):
+        if not self.is_registered:
+            return
         self.SYS_HOTKEY.unregister([KEY_REMAP.get(x) or x for x in self.keys])
-        self.keys = None
+        self.is_registered = False
 
-    def set_callback(self, callback):
-        self.bind_to = callback
+    def bind_to(self, bind, raw=True):
+        try:
+            some_object_iterator = iter(bind)
+            if raw and ALLOW_PASTE and len(bind) > 9:
+                self.bound_method_callback = lambda *args, **kwargs: send_paste(bind)
+            else:
+                self.bound_method_callback = Sender(bind, raw)
+        except TypeError as te:
+            self.bound_method_callback = bind
 
 
 # endregion
