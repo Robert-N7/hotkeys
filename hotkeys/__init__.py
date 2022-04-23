@@ -279,7 +279,9 @@ if platform.system() == "Linux":
             Hotkey.SYS_HOTKEY.trivial_mods = ignore
 
 
-    # optimize for keycode lookup
+    # cache keycode lookup table
+    # While this takes longer at startup,
+    # it makes future lookups O(1) instead of O(i*j)
     KEYCODE_LOOKUP = {}
     mn, mx = get_min_max_keycode()
     cols = __kbmap.keysyms_per_keycode

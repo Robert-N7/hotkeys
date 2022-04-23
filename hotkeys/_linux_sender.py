@@ -142,6 +142,7 @@ keyboardMapping['control'] = keyboardMapping['ctrl']
 
 
 class LinuxSender(_sender.SendBase):
+    current_mask = 0
 
     hotkey_map = {
         '^': X.ControlMask,
@@ -157,10 +158,13 @@ class LinuxSender(_sender.SendBase):
         mask = 0
         for x in hotkey:
             mask |= self.hotkey_map.get(x, 0)
-        self._compile_keydown(hotkey[-1], mask=mask)
-        self._compile_keyup(hotkey[-1], mask=mask)
+        self._compile_keydown(hotkey[-1], mask=mask | self.current_mask)
+        self._compile_keyup(hotkey[-1], mask=mask | self.current_mask)
 
     def _compile_keydown(self, key, sleep=True, mask=0):
+        if key in self.hotkey_map:
+            LinuxSender.current_mask |= self.hotkey_map[key]
+            return
         is_shift = self.is_shift_character(key)
         if is_shift:
             mask |= X.ShiftMask
@@ -174,9 +178,12 @@ class LinuxSender(_sender.SendBase):
         key_codes.append((x,
                           True,
                           sleep or len(key_codes) < 3,
-                          mask))
+                          mask | self.current_mask))
 
     def _compile_keyup(self, key, sleep=True, mask=0):
+        if key in self.hotkey_map and self.current_mask & self.hotkey_map[key]:
+            LinuxSender.current_mask &= ~self.hotkey_map[key]
+            return
         is_shift = self.is_shift_character(key)
         if is_shift:
             mask |= X.ShiftMask
@@ -189,7 +196,7 @@ class LinuxSender(_sender.SendBase):
         self.key_codes.append((x,
                                False,
                                sleep or len(self.key_codes) < 3,
-                               mask))
+                               mask | self.current_mask))
 
     def _compile_press(self, x):
         self._compile_keydown(x, False)

@@ -16,6 +16,7 @@ Hotkey('+{escape}', Hotkey.quit)
 # ! = alt
 # Control + h to send Hello world!
 Hotkey('^h', 'Hello world!', raw=True)
+Hotkey('!+h', lambda h: hotkeys.send('^+{left}'))
 
 
 # This is a convenience method to prevent your script from exiting
